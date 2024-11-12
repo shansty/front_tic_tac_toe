@@ -1,0 +1,29 @@
+.square {
+    width: 100px;
+    height: 100px;
+    background: white;
+    border: 1px solid orangered;
+    cursor: pointer;
+    outline: none;
+    font-size: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.square:hover {
+    background: orangered;
+    transition: .3s all ease;
+}
+
+.winning {
+    background: orangered;
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+    outline: none;
+    font-size: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
