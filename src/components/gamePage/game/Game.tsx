@@ -5,14 +5,15 @@ import Button from '../../utilsComponent/Button.tsx';
 import axios from 'axios';
 import { getToken, getIDFromToken } from '../../../utils.ts';
 import './Game.css'
+import { Socket, io } from 'socket.io-client';
 import { setupGameInfo } from '../../../axios.ts';
-import { useSocket } from '../../../SocketContext.tsx';
 
 type SquaresArray = string[];
 
 const Game = () => {
     const {id:gameId} = useParams()
     const token = getToken();
+    const user_id = getIDFromToken(token);
     const navigate = useNavigate();
 
     const [board, setBoard] = useState<SquaresArray>(Array(9).fill(null));
@@ -21,19 +22,16 @@ const Game = () => {
     const [winnerIndexes, setWinnerIndexes] = useState(Array(3).fill(null))
     const [winner, setWinner] = useState<String>()
 
-    const socket = useSocket()
 
-    useEffect(() => {
-        if (socket) {
-          socket.on('connection', () => {
-            console.log('Connected to socket in Game:', socket.id);
-          });
-    
-          return () => {
-            socket.off('disconnect');
-          };
-        }
-      }, [socket]);
+    const gamesSocket = io("http://localhost:3001/games", {
+        reconnectionDelayMax: 10000,
+        reconnection: true,
+    }) as Socket;
+
+
+    gamesSocket.on('connect_error', (error) => {
+        console.error('Socket connection error:', error);
+    }); 
 
 
     useEffect(() => {
@@ -115,15 +113,19 @@ const Game = () => {
         if(winner || board[index]) {
             return
         }
-        board[index] = isXNext ? 'X' : 'O'
-
-        if(isXNext) {
-            updateBoardWithX(index, token, gameId as string)
-        } else {
-            updateBoardWithO(index, token, gameId as string)
-        }
-        setBoard([...board])
-        setIsXNext(!isXNext)
+        gamesSocket.emit("updating_game", index, gameId, user_id )        
+        gamesSocket.on("move", (game, char) => {
+            console.log(game)
+            if(char == "X") {
+                board[index] = char
+                setBoard([...board])
+                setIsXNext(false)
+            } else {
+                board[index] = char
+                setBoard([...board])
+                setIsXNext(true)
+            }
+        })
 
         let hasNoNulls = board.every((element) => element != null);
         console.log(hasNoNulls)
@@ -163,9 +165,9 @@ const Game = () => {
         setWinnerIndexes(Array(3).fill(null))
         setWinner(undefined)
         setDraw(false)
-        setupGameInfo(token, navigate)
+        //setupGameInfo(token, navigate)
         if(token) {
-            setupGameInfo(token, navigate)
+            //setupGameInfo(token, navigate)
         }
     };
 

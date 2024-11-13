@@ -1,19 +1,24 @@
 import axios from 'axios';
-import { getIDFromToken, getToken } from './utils.ts';
+import { getIDFromToken } from './utils.ts';
 
 
 // const SET_UP_GAME_URL = `http://localhost:3001/game/${id}`
 
-export const setupGameInfo = async (token:string, navigate:Function) => {
+export const setupGameInfo = async (token:string, navigate:Function, gameId:string, user_X:string, user_O:string) => {
     const id = getIDFromToken(token);
     const GAME_URL = `http://localhost:3001/main/${id}`
+    const body = {
+        gameId: gameId,
+        user_X: user_X,
+        user_O: user_O
+    }
+    console.dir(body)
     try {
-        const response = await axios.get(GAME_URL,   
+        await axios.post(GAME_URL, body,   
             {headers: {
                 'Access-Control-Allow-Origin': '*', 
                 'Content-Type': 'application/json',
                 'Authorization':   `Bearer ${token}`}});
-        let gameId = response?.data?.game?.gameId;
         navigate(`/game/${gameId}`)
     } catch (err) {
         window.alert(`Error: ${err}`);
