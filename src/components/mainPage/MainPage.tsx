@@ -32,8 +32,10 @@ const MainPage = () => {
 
             awaitingRoomSocket.on('gameid', ({ gameId, user_X, user_O}) => {
                 console.log(gameId)
+                console.dir({ gameId, user_O, user_X })
+
                 setShowPopup(false);
-                setupGameInfo(token, navigate, gameId, user_X, user_O)
+                setupGameInfo(navigate, gameId)
             })
         }
     }
