@@ -44,6 +44,26 @@ const Game = () => {
     }, [])
 
 
+    useEffect(() => {
+      gamesSocket.emit("start_game", user_id)
+      gamesSocket.on(`update-${gameId}`, game => {
+        console.dir({ game })
+        const board = Array(9).fill(null)
+
+        game.o.forEach(i => { board[i] = "O"})
+        game.x.forEach(i => { board[i] = "X"})
+
+        console.dir({ board })
+        setBoard(board)
+        
+      });
+      return () => {
+        console.log("useEffect retrun")
+        gamesSocket.off(`update-${gameId}`);
+      };
+    }, []);
+
+
     const getGameResult = async() => {
         const GET_GAME_RESULTS_URL = `http://localhost:3001/game/${gameId}`
         try {
@@ -110,30 +130,7 @@ const Game = () => {
 
 
     const handleClick = (index:number) => {
-        if(winner || board[index]) {
-            return
-        }
-        gamesSocket.emit("updating_game", index, gameId, user_id )        
-        gamesSocket.on("move", (game, char) => {
-            console.log(game)
-            if(char == "X") {
-                board[index] = char
-                setBoard([...board])
-                setIsXNext(false)
-            } else {
-                board[index] = char
-                setBoard([...board])
-                setIsXNext(true)
-            }
-        })
-
-        let hasNoNulls = board.every((element) => element != null);
-        console.log(hasNoNulls)
-
-        if (hasNoNulls && !winner) {
-            setDraw(true)
-            return
-        }
+        gamesSocket.emit("move", gameId, user_id, index)        
     }
 
     
