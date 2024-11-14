@@ -6,9 +6,16 @@ import axios from 'axios';
 import { getToken, getIDFromToken } from '../../../utils.ts';
 import './Game.css'
 import { Socket, io } from 'socket.io-client';
+import { Games } from '../../../types.ts'
 import { setupGameInfo } from '../../../axios.ts';
 
 type SquaresArray = string[];
+
+const gamesSocket = io("http://localhost:3002/games", {
+    reconnectionDelayMax: 10000,
+    reconnection: true,
+    withCredentials: true,
+}) as Socket;
 
 const Game = () => {
     const {id:gameId} = useParams()
@@ -21,12 +28,6 @@ const Game = () => {
     const [draw, setDraw] = useState(false)
     const [winnerIndexes, setWinnerIndexes] = useState(Array(3).fill(null))
     const [winner, setWinner] = useState<String>()
-
-
-    const gamesSocket = io("http://localhost:3001/games", {
-        reconnectionDelayMax: 10000,
-        reconnection: true,
-    }) as Socket;
 
 
     gamesSocket.on('connect_error', (error) => {
@@ -46,7 +47,7 @@ const Game = () => {
 
     useEffect(() => {
       gamesSocket.emit("start_game", user_id)
-      gamesSocket.on(`update-${gameId}`, game => {
+      gamesSocket.on(`update-${gameId}`, (game: Games) => {
         console.dir({ game })
         const board = Array(9).fill(null)
 
@@ -86,48 +87,6 @@ const Game = () => {
             window.alert(`Error: ${err}`);
         }
     }
-
-
-    const updateBoardWithX = async (x:number, token:string, gameId:string) => {
-        const id = getIDFromToken(token);
-        const UPDATE_GAME_URL = `http://localhost:3001/game/${id}`
-        const body = {
-            gameId: gameId,
-            x: x
-        }
-    
-        try {
-            const response = await axios.put(UPDATE_GAME_URL, body,  
-                {headers: {
-                    'Access-Control-Allow-Origin': '*', 
-                    'Content-Type': 'application/json',
-                    'Authorization':   `Bearer ${token}`}});
-            console.log(response?.data)
-        } catch (err) {
-            window.alert(`Error: ${err}`);
-        }
-    }
-
-    const updateBoardWithO = async (o:number, token:string, gameId:string) => {
-        const id = getIDFromToken(token);
-        const UPDATE_GAME_URL = `http://localhost:3001/game/${id}`
-        const body = {
-            gameId: gameId,
-            o: o
-        }
-    
-        try {
-            const response = await axios.put(UPDATE_GAME_URL, body,  
-                {headers: {
-                    'Access-Control-Allow-Origin': '*', 
-                    'Content-Type': 'application/json',
-                    'Authorization':   `Bearer ${token}`}});
-            console.log(response?.data)
-        } catch (err) {
-            window.alert(`Error: ${err}`);
-        }
-    }
-
 
     const handleClick = (index:number) => {
         gamesSocket.emit("move", gameId, user_id, index)        

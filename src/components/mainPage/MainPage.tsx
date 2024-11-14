@@ -7,18 +7,19 @@ import { setupGameInfo } from '../../axios.ts';
 import { Socket, io } from 'socket.io-client';
 import PopUp from '../utilsComponent/PopUp.tsx';
 
+const awaitingRoomSocket = io("http://localhost:3002/awaiting_room", {
+    reconnectionDelayMax: 10000,
+    reconnection: true,
+    transports : ['websocket'],
+}) as Socket;
+
+
 const MainPage = () => {
 
     const token = getToken();
     const user_id = getIDFromToken(token);
     const navigate = useNavigate();
     const [showPopup, setShowPopup] = useState(false);
-
-    const awaitingRoomSocket = io("http://localhost:3001/awaiting_room", {
-        reconnectionDelayMax: 10000,
-        reconnection: true,
-    }) as Socket;
-
 
     awaitingRoomSocket.on('connect_error', (error) => {
         console.error('Socket connection error:', error);
