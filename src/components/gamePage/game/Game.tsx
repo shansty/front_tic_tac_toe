@@ -28,6 +28,7 @@ const Game = () => {
     const [draw, setDraw] = useState(false)
     const [winnerIndexes, setWinnerIndexes] = useState(Array(3).fill(null))
     const [winner, setWinner] = useState<String>()
+    const [playerRole, setPlayerRole] = useState("")
 
 
     gamesSocket.on('connect_error', (error) => {
@@ -46,7 +47,11 @@ const Game = () => {
 
 
     useEffect(() => {
-      gamesSocket.emit("start_game", user_id)
+      gamesSocket.emit("start_game", user_id, gameId)
+      gamesSocket.on("determining_the_order_of_moves", (msg:string) => {
+        setPlayerRole(msg);
+        console.log(playerRole)
+      })
       gamesSocket.on(`update-${gameId}`, (game: Games) => {
         console.dir({ game })
         const board = Array(9).fill(null)
@@ -55,8 +60,18 @@ const Game = () => {
         game.x.forEach(i => { board[i] = "X"})
 
         console.dir({ board })
+        if(!board.includes(null)) {
+            setDraw(true)
+        }
         setBoard(board)
-        
+      });
+      gamesSocket.on("order_of_move", (turn:string) => {
+        if(turn == "X") {
+            setIsXNext(true) 
+        };
+        if( turn == "O") {
+            setIsXNext(false)
+        }
       });
       return () => {
         console.log("useEffect retrun")
@@ -130,6 +145,9 @@ const Game = () => {
 
     return (
         <div className="game">
+            <p className='game_text'>
+                {playerRole}
+            </p>
             <p className='game_text'>
                 { winner ? 'The winner is ' + winner : !winner && !draw ? 'Now it is ' + (isXNext ? 'X' : 'O') + ' turn' : "This is the draw!"}
             </p>
