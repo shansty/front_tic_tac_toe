@@ -8,6 +8,8 @@ import './Game.css'
 import { Socket, io } from 'socket.io-client';
 import { Games } from '../../../types.ts'
 import { setupGameInfo } from '../../../axios.ts';
+import PopUp from '../../utilsComponent/PopUp.tsx';
+
 
 type SquaresArray = string[];
 
@@ -17,18 +19,26 @@ const gamesSocket = io("http://localhost:3002/games", {
     withCredentials: true,
 }) as Socket;
 
+const awaitingRoomSocket = io("http://localhost:3002/awaiting_room", {
+    reconnectionDelayMax: 10000,
+    reconnection: true,
+    transports : ['websocket'],
+}) as Socket;
+
 const Game = () => {
-    const {id:gameId} = useParams()
+    const {id:gameId} = useParams();
+    console.log(`DEGUG GAME_ID ${gameId}`)
     const token = getToken();
     const user_id = getIDFromToken(token);
     const navigate = useNavigate();
 
     const [board, setBoard] = useState<SquaresArray>(Array(9).fill(null));
-    const [isXNext, setIsXNext] = useState(true)
-    const [draw, setDraw] = useState(false)
-    const [winnerIndexes, setWinnerIndexes] = useState(Array(3).fill(null))
+    const [isXNext, setIsXNext] = useState(true);
+    const [draw, setDraw] = useState(false);
+    const [winnerIndexes, setWinnerIndexes] = useState(Array(3).fill(null));
     const [winner, setWinner] = useState<String>()
-    const [playerRole, setPlayerRole] = useState("")
+    const [playerRole, setPlayerRole] = useState("");
+    const [showPopup, setShowPopup] = useState(false);
 
 
     gamesSocket.on('connect_error', (error) => {
@@ -47,19 +57,18 @@ const Game = () => {
 
 
     useEffect(() => {
+        console.log("Inside useEffect")
       gamesSocket.emit("start_game", user_id, gameId)
+      console.log(`start_game socket ${gameId} ${user_id}`)
       gamesSocket.on("determining_the_order_of_moves", (msg:string) => {
         setPlayerRole(msg);
-        console.log(playerRole)
       })
       gamesSocket.on(`update-${gameId}`, (game: Games) => {
-        console.dir({ game })
         const board = Array(9).fill(null)
 
         game.o.forEach(i => { board[i] = "O"})
         game.x.forEach(i => { board[i] = "X"})
 
-        console.dir({ board })
         if(!board.includes(null)) {
             setDraw(true)
         }
@@ -68,16 +77,16 @@ const Game = () => {
       gamesSocket.on("order_of_move", (turn:string) => {
         if(turn == "X") {
             setIsXNext(true) 
-        };
-        if( turn == "O") {
+        } else {
             setIsXNext(false)
         }
+        
       });
       return () => {
         console.log("useEffect retrun")
         gamesSocket.off(`update-${gameId}`);
       };
-    }, []);
+    }, [gameId]);
 
 
     const getGameResult = async() => {
@@ -131,29 +140,79 @@ const Game = () => {
 
 
      const startNewGame = async () => {
-        setBoard(Array(9).fill(null));
-        setIsXNext(true)
+        setShowPopup(true)
         setWinnerIndexes(Array(3).fill(null))
         setWinner(undefined)
         setDraw(false)
-        //setupGameInfo(token, navigate)
-        if(token) {
-            //setupGameInfo(token, navigate)
+        awaitingRoomSocket.emit("await", user_id)
+        awaitingRoomSocket.on('gameid', ({ gameId }) => {
+            console.log(gameId)
+            console.dir({ gameId })
+            setupGameInfo(navigate, gameId)
+            setShowPopup(false)
+        })
+        setBoard(Array(9).fill(null))
+    };
+    
+    const handleStopLooking = () => {
+        if (awaitingRoomSocket) {
+            awaitingRoomSocket.emit("stop_awaiting", user_id); 
+            awaitingRoomSocket.off("gameid"); 
+            setShowPopup(false); 
         }
     };
 
+    const handleGoToMain = () => {
+        setShowPopup(false); 
+        navigate("/main");
+    }
 
     return (
-        <div className="game">
-            <p className='game_text'>
-                {playerRole}
-            </p>
-            <p className='game_text'>
-                { winner ? 'The winner is ' + winner : !winner && !draw ? 'Now it is ' + (isXNext ? 'X' : 'O') + ' turn' : "This is the draw!"}
-            </p>
-            <Board squares={board} handleClick={handleClick} winningIndexes={winnerIndexes}/>
-            <Button className='game_button' onClick={startNewGame}>Start a new game</Button>
-        </div>
+        <>
+            <div className="game">
+                <p className='game_text'>
+                    {playerRole}
+                </p>
+                <p className='game_text'>
+                    { winner ? 'The winner is ' + winner : !winner && !draw ? 'Now it is ' + (isXNext ? 'X' : 'O') + ' turn' : "This is the draw!"}
+                </p>
+                <Board squares={board} handleClick={handleClick} winningIndexes={winnerIndexes}/>
+                <Button className='game_button' onClick={startNewGame}>Start a new game</Button>
+                {/* Chat */}
+            </div>
+            {showPopup && (
+                        <PopUp 
+                            imgSrc= "/loading.svg"
+                            text="Looking for another player..." 
+                            buttonText='Close'
+                            onClick={handleStopLooking}
+                        />
+                    )}
+            {winner && (
+                        <PopUp 
+                            imgSrc= "/balloon.svg"
+                            text={`Congratulations! The winner is ${winner}`!}
+                            buttonText='Start a new game'
+                            onClick={startNewGame}
+                            secondButton={{
+                                text: "Go to the main page", 
+                                onClick: handleGoToMain,
+                            }}
+                    />
+            )}   
+            {draw && (
+                        <PopUp 
+                            imgSrc= "/balloon.svg"
+                            text="This is the draw!"
+                            buttonText='Start a new game'
+                            onClick={startNewGame}
+                            secondButton={{
+                                text: "Go to the main page", 
+                                onClick: handleGoToMain,
+                            }}
+                    />
+            )}    
+        </>
     );
 }
 

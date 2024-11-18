@@ -27,25 +27,38 @@ const MainPage = () => {
   
 
     const handleClick = async () => {
-        if(awaitingRoomSocket) {
+        if (awaitingRoomSocket) {
             setShowPopup(true);
-            awaitingRoomSocket.emit("await", user_id)
-
-            awaitingRoomSocket.on('gameid', ({ gameId }) => {
-                console.log(gameId)
-                console.dir({ gameId })
-
+            awaitingRoomSocket.emit("await", user_id);
+    
+            awaitingRoomSocket.on("gameid", ({ gameId }) => {
+                console.log(gameId);
+                console.dir({ gameId });
+    
                 setShowPopup(false);
-                setupGameInfo(navigate, gameId)
-            })
+                setupGameInfo(navigate, gameId);
+            });
         }
-    }
+    };
+
+    const handleStopLooking = () => {
+        if (awaitingRoomSocket) {
+            awaitingRoomSocket.emit("stop_awaiting", user_id); 
+            awaitingRoomSocket.off("gameid"); 
+            setShowPopup(false); 
+        }
+    };
    
     return(
         <>
             <Button className='main_button' onClick={handleClick}>Start the game</Button>
             {showPopup && (
-                    <PopUp message="Looking for another player..." />
+                    <PopUp 
+                        imgSrc= "/loading.svg"
+                        text="Looking for another player..." 
+                        buttonText='Close'
+                        onClick={handleStopLooking}
+                    />
                 )}
         </>
     );
