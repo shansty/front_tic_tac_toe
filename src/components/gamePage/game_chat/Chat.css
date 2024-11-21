@@ -1,11 +1,14 @@
 .chat-container {
     display: flex;
     flex-direction: column;
-    width: 400px;
+    width: 30%;
     height: 500px;
-    /* border: 1px solid #ccc; */
-    border-radius: 8px;
     overflow: hidden;
+    position: absolute;
+    right: 5%;
+    top: 45%;
+    transform: translateY(-40%);
+    border: 1px solid rgba(251, 79, 0);
   }
   
   .messages-container {
@@ -16,7 +19,7 @@
   }
   
   .message {
-    background-color: #f9f9f91e;
+    background-color: rgb(50, 65, 65);
     padding: 8px;
     margin: 4px 0;
     border: 1px solid rgba(251, 79, 0);
@@ -33,7 +36,7 @@
   }
   
   .message-input {
-    width: 250px;
+    width: 300px;
     padding-left: 5px;
     padding-top: 10px;
     border: 2px solid rgba(251, 79, 0);

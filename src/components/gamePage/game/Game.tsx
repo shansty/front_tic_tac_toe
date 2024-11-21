@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Socket, io } from 'socket.io-client';
 import Board from '../board/Board.tsx';
 import Button from '../../utilsComponent/Button.tsx';
-import axios from 'axios';
-import { getToken, getIDFromToken } from '../../../utils.ts';
-import './Game.css'
-import { Socket, io } from 'socket.io-client';
-import { Games } from '../../../types.ts'
-import { setupGameInfo } from '../../../axios.ts';
 import PopUp from '../../utilsComponent/PopUp.tsx';
+import Chat from '../game_chat/Chat.tsx';
+import { getToken, getIDFromToken, calculateWinner, setupGameInfo } from '../../../utils.ts';
+import { getGameResult } from '../../../axios.ts';
+import { Games } from '../../../types.ts'
+import './Game.css'
 
 
 type SquaresArray = string[];
@@ -25,8 +25,9 @@ const awaitingRoomSocket = io("http://localhost:3002/awaiting_room", {
     transports : ['websocket'],
 }) as Socket;
 
+
 const Game = () => {
-    const {id:gameId} = useParams();
+    const { id: gameId } = useParams();
     console.log(`DEGUG GAME_ID ${gameId}`)
     const token = getToken();
     const user_id = getIDFromToken(token);
@@ -47,99 +48,52 @@ const Game = () => {
 
 
     useEffect(() => {
-        const winner = calculateWinner(board)
+        const winner = calculateWinner(board, setWinnerIndexes)
         setWinner(winner)
     }, [board])
 
+
     useEffect(() => {
-        getGameResult()
+        getGameResult(gameId as string, token, board, setBoard)
     }, [])
 
 
     useEffect(() => {
         console.log("Inside useEffect")
-      gamesSocket.emit("start_game", user_id, gameId)
-      console.log(`start_game socket ${gameId} ${user_id}`)
-      gamesSocket.on("determining_the_order_of_moves", (msg:string) => {
-        setPlayerRole(msg);
-      })
-      gamesSocket.on(`update-${gameId}`, (game: Games) => {
-        const board = Array(9).fill(null)
+        gamesSocket.emit("start_game", user_id, gameId)
+        gamesSocket.on("determining_the_order_of_moves", (msg:string) => {
+            setPlayerRole(msg);
+        })
+        gamesSocket.on(`update-${gameId}`, (game: Games) => {
+            const board = Array(9).fill(null)
+            game.o.forEach(i => { board[i] = "O"})
+            game.x.forEach(i => { board[i] = "X"})
+            if(!board.includes(null)) {
+                setDraw(true)
+            }
+            setBoard(board)
+        });
+        gamesSocket.on("order_of_move", (turn:string) => {
+            if(turn == "X") {
+                setIsXNext(true) 
+            } else {
+                setIsXNext(false)
+            }
+        });
 
-        game.o.forEach(i => { board[i] = "O"})
-        game.x.forEach(i => { board[i] = "X"})
-
-        if(!board.includes(null)) {
-            setDraw(true)
-        }
-        setBoard(board)
-      });
-      gamesSocket.on("order_of_move", (turn:string) => {
-        if(turn == "X") {
-            setIsXNext(true) 
-        } else {
-            setIsXNext(false)
-        }
-        
-      });
-      return () => {
-        console.log("useEffect retrun")
-        gamesSocket.off(`update-${gameId}`);
-      };
+        return () => {
+            console.log("useEffect retrun")
+            gamesSocket.off(`update-${gameId}`);
+        };
     }, [gameId]);
 
-
-    const getGameResult = async() => {
-        const GET_GAME_RESULTS_URL = `http://localhost:3001/game/${gameId}`
-        try {
-            const response = await axios.get(GET_GAME_RESULTS_URL, 
-                {headers: {
-                    'Access-Control-Allow-Origin': '*', 
-                    'Content-Type': 'application/json',
-                    'Authorization':   `Bearer ${token}`}});
-            console.log(response.data.game)
-            let indexOFX = response.data.game.x;
-            let indexOFO = response.data.game.o;
-            for(let index of indexOFX) {
-                board[index] = 'X'
-            }
-            for(let index of indexOFO) {
-                board[index] = 'O'
-            }
-            setBoard([...board])
-        } catch (err) {
-            window.alert(`Error: ${err}`);
-        }
-    }
 
     const handleClick = (index:number) => {
         gamesSocket.emit("move", gameId, user_id, index)        
     }
 
-    
-    function calculateWinner(squares: SquaresArray) {
-        const lines = [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
-            [0, 3, 6],
-            [1, 4, 7],
-            [2, 5, 8],
-            [0, 4, 8],
-            [2, 4, 6]
-        ]
-        
-        for(let i = 0; i < lines.length; i++) {
-            const [a, b, c] = lines[i];
-            if(squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-                setWinnerIndexes(lines[i])
-                return squares[a]
-            }
-        }
-    }
 
-
-     const startNewGame = async () => {
+    const startNewGame = async () => {
         setShowPopup(true)
         setWinnerIndexes(Array(3).fill(null))
         setWinner(undefined)
@@ -154,6 +108,7 @@ const Game = () => {
         setBoard(Array(9).fill(null))
     };
     
+
     const handleStopLooking = () => {
         if (awaitingRoomSocket) {
             awaitingRoomSocket.emit("stop_awaiting", user_id); 
@@ -162,10 +117,12 @@ const Game = () => {
         }
     };
 
+
     const handleGoToMain = () => {
         setShowPopup(false); 
         navigate("/main");
     }
+
 
     return (
         <>
@@ -178,8 +135,8 @@ const Game = () => {
                 </p>
                 <Board squares={board} handleClick={handleClick} winningIndexes={winnerIndexes}/>
                 <Button className='game_button' onClick={startNewGame}>Start a new game</Button>
-                {/* Chat */}
             </div>
+            <Chat gameId={gameId}/>
             {showPopup && (
                         <PopUp 
                             imgSrc= "/loading.svg"
