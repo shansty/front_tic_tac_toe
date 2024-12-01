@@ -1,9 +1,10 @@
-export function getIDFromToken(token:string) {
+export function getIDFromToken(token:string):number | null {
     if(!token) {
         return null
     } else {
         let tokenParts = token.split('.');
         let payload = JSON.parse(atob(tokenParts[1]));
+        console.log(payload.id)
         return payload.id;
     }
 }

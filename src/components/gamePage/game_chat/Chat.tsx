@@ -2,15 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Socket, io } from 'socket.io-client';
 import Button from '../../utilsComponent/Button.tsx';
 import { getToken, getIDFromToken } from '../../../utils.ts';
-import { getUserRoleForChat } from '../../../axios.ts';
+import { getUserRoleForChat, getGameChatMessages } from '../../../axios.ts';
+import { TypeSocketError, TypeChatMessage, TypeGameMessage } from '../../../types.ts';
 import './Chat.css'; 
 
-interface ChatMessage {
-    message: string;
-    sender: string;
-  }
 
-  interface ChatProps {
+type TypeChatProps = {
     gameId?: string;
 }  
 
@@ -20,27 +17,35 @@ const gameChatSocket = io("http://localhost:3002/game_chat", {
     withCredentials: true,
 }) as Socket;  
 
-const Chat: React.FC<ChatProps> = ({ gameId }) => {
+const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
 
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const [inputMessage, setInputMessage] = useState<string>('');
-    const [sender, setSender] = useState<string>("");
+    const [messages, setMessages] = useState<TypeChatMessage[]>([]);
+    const [inputMessage, setInputMessage] = useState("");
+    const [sender, setSender] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const token = getToken();
     const userId = getIDFromToken(token);
 
     useEffect(() => {
-        getUserRoleForChat(gameId as string, userId, token, setSender)
+        getUserRoleForChat(gameId as string, userId as number, token, setSender)
+        getGameChatMessages(gameId as string, token, setMessages)
+        console.log(`${sender} - sender in use Effect`)
         gameChatSocket.emit("start_chat", userId)
+        gameChatSocket.on("error-event", (error:TypeSocketError) => {
+            console.error(`Error ${error.message} ${error.code}`);
+            alert(error.message);
+        })
     }, [])    
     
 
     useEffect(() => {
-        gameChatSocket.on("receive_message", (message: ChatMessage) => {
+        gameChatSocket.on("receive_message", (message: TypeChatMessage) => {
             console.log("receive_message.start")
             console.dir({messages, message})
+
             setMessages([...messages, message]);
+            console.dir({messages, message})
         });
         scrollToBottom();
         return () => {
@@ -56,7 +61,7 @@ const Chat: React.FC<ChatProps> = ({ gameId }) => {
 
     const handleSendMessage = () => {
         console.log(`inputMwssage    ${inputMessage}`)
-        gameChatSocket.emit("send_message", sender, userId, gameId, inputMessage)
+        gameChatSocket.emit("send_message", userId, gameId, inputMessage)
         setInputMessage('');
         scrollToBottom();
     };

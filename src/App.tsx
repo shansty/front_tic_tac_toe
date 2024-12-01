@@ -5,7 +5,7 @@ import Game from './components/gamePage/game/Game.tsx';
 import { Route, BrowserRouter, Routes} from 'react-router-dom';
 
 
-function App() {
+const App: React.FC = () => {
   return (
     <div className='app'>
       <BrowserRouter>

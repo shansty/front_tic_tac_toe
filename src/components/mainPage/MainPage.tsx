@@ -15,7 +15,7 @@ const awaitingRoomSocket = io("http://localhost:3002/awaiting_room", {
 }) as Socket;
 
 
-const MainPage = () => {
+const MainPage: React.FC = () => {
 
     const token = getToken();
     const user_id = getIDFromToken(token);
@@ -32,7 +32,7 @@ const MainPage = () => {
         if (awaitingRoomSocket) {
             setShowPopup(true);
             awaitingRoomSocket.emit("await", user_id);
-            awaitingRoomSocket.on("gameid", ({ gameId }) => {
+            awaitingRoomSocket.on("gameid", (gameId) => {
                 console.log(gameId);
                 console.dir({ gameId });
     

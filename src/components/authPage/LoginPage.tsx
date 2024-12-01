@@ -4,7 +4,7 @@ import axios from 'axios';
 import Button from '../utilsComponent/Button.tsx';
 
 
-const LoginPage = () => {
+const LoginPage: React.FC = () => {
 
     const LOGIN_URL = 'http://localhost:3001/login'
     const REGISTER_URL= 'http://localhost:3001/register';
@@ -15,7 +15,7 @@ const LoginPage = () => {
     const navigate = useNavigate();
 
 
-    const signIn = async (e) => {
+    const signIn = async (e:React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
 
         try {
             e.preventDefault();
@@ -42,10 +42,10 @@ const LoginPage = () => {
         }
     }
 
-    const signUp = async (e) => {
+    const signUp = async (e:React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
         try {
-            const response = await axios.post(REGISTER_URL, {email, password},  
+            await axios.post(REGISTER_URL, {email, password},  
                 {headers: {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'}});
             setEmail('');
             setPassword('');

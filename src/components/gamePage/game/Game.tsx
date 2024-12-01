@@ -7,11 +7,11 @@ import PopUp from '../../utilsComponent/PopUp.tsx';
 import Chat from '../game_chat/Chat.tsx';
 import { getToken, getIDFromToken, calculateWinner, setupGameInfo } from '../../../utils.ts';
 import { getGameResult } from '../../../axios.ts';
-import { Games } from '../../../types.ts'
+import { TypeGame, TypeSocketError, EnumRole } from '../../../types.ts'
 import './Game.css'
 
 
-type SquaresArray = string[];
+type TypeSquaresArray = string[];
 
 const gamesSocket = io("http://localhost:3002/games", {
     reconnectionDelayMax: 10000,
@@ -22,18 +22,17 @@ const gamesSocket = io("http://localhost:3002/games", {
 const awaitingRoomSocket = io("http://localhost:3002/awaiting_room", {
     reconnectionDelayMax: 10000,
     reconnection: true,
-    transports : ['websocket'],
+    transports: ['websocket'],
 }) as Socket;
 
 
-const Game = () => {
+const Game: React.FC = () => {
     const { id: gameId } = useParams();
-    console.log(`DEGUG GAME_ID ${gameId}`)
     const token = getToken();
     const user_id = getIDFromToken(token);
     const navigate = useNavigate();
 
-    const [board, setBoard] = useState<SquaresArray>(Array(9).fill(null));
+    const [board, setBoard] = useState<TypeSquaresArray>(Array(9).fill(null));
     const [isXNext, setIsXNext] = useState(true);
     const [draw, setDraw] = useState(false);
     const [winnerIndexes, setWinnerIndexes] = useState(Array(3).fill(null));
@@ -44,7 +43,7 @@ const Game = () => {
 
     gamesSocket.on('connect_error', (error) => {
         console.error('Socket connection error:', error);
-    }); 
+    });
 
 
     useEffect(() => {
@@ -55,30 +54,48 @@ const Game = () => {
 
     useEffect(() => {
         getGameResult(gameId as string, token, board, setBoard)
+        gamesSocket.on("error-event", (error: TypeSocketError) => {
+            console.error(`Error ${error.message} ${error.code}`);
+            alert(error.message);
+        })
     }, [])
 
 
     useEffect(() => {
         console.log("Inside useEffect")
+        console.dir({ user_id, gameId })
         gamesSocket.emit("start_game", user_id, gameId)
-        gamesSocket.on("determining_the_order_of_moves", (msg:string) => {
+        gamesSocket.on("determining_the_order_of_moves", (msg: string) => {
             setPlayerRole(msg);
         })
-        gamesSocket.on(`update-${gameId}`, (game: Games) => {
+        gamesSocket.on(`update-${gameId}`, (game: TypeGame) => {
             const board = Array(9).fill(null)
-            game.o.forEach(i => { board[i] = "O"})
-            game.x.forEach(i => { board[i] = "X"})
-            if(!board.includes(null)) {
-                setDraw(true)
+            console.dir({ game })
+
+            const gameUserX = game.game_user.find(gu => gu.role === EnumRole.PLAYER_X)
+            if (gameUserX) {
+                const gameUserXId = gameUserX.id
+                game.game_move.forEach(move => {
+                    console.dir({ move, gameUserXId })
+                    board[move.move_index] = move.game_user_id === gameUserXId ? "X" : "O"
+                    console.dir(board)
+                })
             }
             setBoard(board)
+
+            if (!board.includes(null) && (winner !== "X" || winner !== "O")) {
+                setDraw(true)
+            }
+            
+            console.log(` Board ${board}`)
         });
-        gamesSocket.on("order_of_move", (turn:string) => {
-            if(turn == "X") {
-                setIsXNext(true) 
+        gamesSocket.on("order_of_move", (turn: string) => {
+            if (turn === "X") {
+                setIsXNext(true)
             } else {
                 setIsXNext(false)
             }
+            console.log(`isXNext  ${isXNext}`)
         });
 
         return () => {
@@ -88,8 +105,9 @@ const Game = () => {
     }, [gameId]);
 
 
-    const handleClick = (index:number) => {
-        gamesSocket.emit("move", gameId, user_id, index)        
+    const handleClick = (index: number) => {
+        gamesSocket.emit("move", gameId, user_id, index)
+        console.log("After emit move")
     }
 
 
@@ -99,27 +117,26 @@ const Game = () => {
         setWinner(undefined)
         setDraw(false)
         awaitingRoomSocket.emit("await", user_id)
-        awaitingRoomSocket.on('gameid', ({ gameId }) => {
-            console.log(gameId)
-            console.dir({ gameId })
+        awaitingRoomSocket.on('gameid', ( gameId ) => {
             setupGameInfo(navigate, gameId)
+            navigate(0);
             setShowPopup(false)
         })
         setBoard(Array(9).fill(null))
     };
-    
+
 
     const handleStopLooking = () => {
         if (awaitingRoomSocket) {
-            awaitingRoomSocket.emit("stop_awaiting", user_id); 
-            awaitingRoomSocket.off("gameid"); 
-            setShowPopup(false); 
+            awaitingRoomSocket.emit("stop_awaiting", user_id);
+            awaitingRoomSocket.off("gameid");
+            setShowPopup(false);
         }
     };
 
 
     const handleGoToMain = () => {
-        setShowPopup(false); 
+        setShowPopup(false);
         navigate("/main");
     }
 
@@ -131,44 +148,44 @@ const Game = () => {
                     {playerRole}
                 </p>
                 <p className='game_text'>
-                    { winner ? 'The winner is ' + winner : !winner && !draw ? 'Now it is ' + (isXNext ? 'X' : 'O') + ' turn' : "This is the draw!"}
+                    {winner ? 'The winner is ' + winner : !winner && !draw ? 'Now it is ' + (isXNext ? 'X' : 'O') + ' turn' : "This is the draw!"}
                 </p>
-                <Board squares={board} handleClick={handleClick} winningIndexes={winnerIndexes}/>
+                <Board squares={board} handleClick={handleClick} winningIndexes={winnerIndexes} />
                 <Button className='game_button' onClick={startNewGame}>Start a new game</Button>
             </div>
-            <Chat gameId={gameId}/>
+            <Chat gameId={gameId} />
             {showPopup && (
-                        <PopUp 
-                            imgSrc= "/loading.svg"
-                            text="Looking for another player..." 
-                            buttonText='Close'
-                            onClick={handleStopLooking}
-                        />
-                    )}
+                <PopUp
+                    imgSrc="/loading.svg"
+                    text="Looking for another player..."
+                    buttonText='Close'
+                    onClick={handleStopLooking}
+                />
+            )}
             {winner && (
-                        <PopUp 
-                            imgSrc= "/balloon.svg"
-                            text={`Congratulations! The winner is ${winner}`!}
-                            buttonText='Start a new game'
-                            onClick={startNewGame}
-                            secondButton={{
-                                text: "Go to the main page", 
-                                onClick: handleGoToMain,
-                            }}
-                    />
-            )}   
+                <PopUp
+                    imgSrc="/balloon.svg"
+                    text={`Congratulations! The winner is ${winner}`!}
+                    buttonText='Start a new game'
+                    onClick={startNewGame}
+                    secondButton={{
+                        text: "Go to the main page",
+                        onClick: handleGoToMain,
+                    }}
+                />
+            )}
             {draw && (
-                        <PopUp 
-                            imgSrc= "/balloon.svg"
-                            text="This is the draw!"
-                            buttonText='Start a new game'
-                            onClick={startNewGame}
-                            secondButton={{
-                                text: "Go to the main page", 
-                                onClick: handleGoToMain,
-                            }}
-                    />
-            )}    
+                <PopUp
+                    imgSrc="/balloon.svg"
+                    text="This is the draw!"
+                    buttonText='Start a new game'
+                    onClick={startNewGame}
+                    secondButton={{
+                        text: "Go to the main page",
+                        onClick: handleGoToMain,
+                    }}
+                />
+            )}
         </>
     );
 }
