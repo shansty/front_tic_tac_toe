@@ -52,10 +52,39 @@ export type TypeGameMessage = {
     message: string;
 }
 
-export type TypeChatMessage = {
+export type TypeGameChatMessage = {
     message: string;
+    username: string;
     sender: string;
-  }
+}
 
+export type TypeMainChatMessage = {
+    message: string;
+    username: string;
+}
+
+export type TypeNotification = {
+    text: string;
+    rival_username: string;
+}
+
+export enum Status {
+    PENDING = "PENDING",
+    REJECTED = "REJECTED",
+    IN_PROCESS = "IN_PROCESS",
+    COMPLETED = "COMPLETED"
+}
+
+export enum Position {
+    ACCEPTOR = "ACCEPTOR",
+    INITIATOR = "INITIATOR",
+}
+
+export type TypeUserGameData = {
+    game_status: Status,
+    game_link: string,
+    rival_username: string,
+    position: Position
+}
 
 

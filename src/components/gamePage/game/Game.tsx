@@ -1,54 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Socket, io } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import Board from '../board/Board.tsx';
-import Button from '../../utilsComponent/Button.tsx';
-import PopUp from '../../utilsComponent/PopUp.tsx';
+import Button from '../../utilsComponent/button/Button.tsx';
+import PopUp from '../../utilsComponent/popUp/PopUp.tsx';
 import Chat from '../game_chat/Chat.tsx';
+import Notification from '../../utilsComponent/notification/Notification.tsx';
 import { getToken, getIDFromToken, calculateWinner, setupGameInfo } from '../../../utils.ts';
-import { getGameResult } from '../../../axios.ts';
+import { getGameResult, makeGameFightStatusComplited } from '../../../axios.ts';
 import { TypeGame, TypeSocketError, EnumRole } from '../../../types.ts'
 import './Game.css'
 
-
-type TypeSquaresArray = string[];
-
-const gamesSocket = io("http://localhost:3002/games", {
+export const gamesSocket = io("http://localhost:3002/games", {
     reconnectionDelayMax: 10000,
     reconnection: true,
     withCredentials: true,
-}) as Socket;
+});
 
-const awaitingRoomSocket = io("http://localhost:3002/awaiting_room", {
+export const awaitingRoomSocket = io("http://localhost:3002/awaiting_room", {
     reconnectionDelayMax: 10000,
     reconnection: true,
-    transports: ['websocket'],
-}) as Socket;
+});
+
 
 
 const Game: React.FC = () => {
     const { id: gameId } = useParams();
     const token = getToken();
-    const user_id = getIDFromToken(token);
+    const user_id = getIDFromToken(token) as number;
     const navigate = useNavigate();
 
-    const [board, setBoard] = useState<TypeSquaresArray>(Array(9).fill(null));
+    const [board, setBoard] = useState<string[]>(Array(9).fill(null));
     const [isXNext, setIsXNext] = useState(true);
     const [draw, setDraw] = useState(false);
     const [winnerIndexes, setWinnerIndexes] = useState(Array(3).fill(null));
     const [winner, setWinner] = useState<String>()
     const [playerRole, setPlayerRole] = useState("");
     const [showPopup, setShowPopup] = useState(false);
-
-
-    gamesSocket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error);
-    });
+    const [notification, setNotification] = useState(false);
+    const [rivalUser, setRivalUser] = useState(Number);
 
 
     useEffect(() => {
         const winner = calculateWinner(board, setWinnerIndexes)
         setWinner(winner)
+        if(winner) {
+            makeGameFightStatusComplited(user_id, gameId as string, token)
+            console.log(`CHEEEEEEEEEEEEEECK 1`)
+        }
     }, [board])
 
 
@@ -58,20 +57,29 @@ const Game: React.FC = () => {
             console.error(`Error ${error.message} ${error.code}`);
             alert(error.message);
         })
+        joinRoom();
     }, [])
 
 
     useEffect(() => {
-        console.log("Inside useEffect")
         console.dir({ user_id, gameId })
+
+        awaitingRoomSocket.on('gameid', (gameId) => {
+            setShowPopup(false);
+            setupGameInfo(navigate, gameId)
+            navigate(0);
+        })
+
         gamesSocket.emit("start_game", user_id, gameId)
+
+
         gamesSocket.on("determining_the_order_of_moves", (msg: string) => {
             setPlayerRole(msg);
         })
+
         gamesSocket.on(`update-${gameId}`, (game: TypeGame) => {
             const board = Array(9).fill(null)
             console.dir({ game })
-
             const gameUserX = game.game_user.find(gu => gu.role === EnumRole.PLAYER_X)
             if (gameUserX) {
                 const gameUserXId = gameUserX.id
@@ -82,20 +90,23 @@ const Game: React.FC = () => {
                 })
             }
             setBoard(board)
-
             if (!board.includes(null) && (winner !== "X" || winner !== "O")) {
                 setDraw(true)
+                makeGameFightStatusComplited(user_id, gameId as string, token)
+                console.log(`CHEEEEEEEEEEEEEECK 2`)
+                // 
+                // 
+                // 
             }
-            
             console.log(` Board ${board}`)
         });
+
         gamesSocket.on("order_of_move", (turn: string) => {
             if (turn === "X") {
                 setIsXNext(true)
             } else {
                 setIsXNext(false)
             }
-            console.log(`isXNext  ${isXNext}`)
         });
 
         return () => {
@@ -105,24 +116,28 @@ const Game: React.FC = () => {
     }, [gameId]);
 
 
+    useEffect( () => {
+        awaitingRoomSocket.on("rematch", (rival_user_id: number) => {
+            console.log("AWAITING REMATCH IS WORK")
+            setRivalUser(rival_user_id)
+            setNotification(true)
+        })
+        awaitingRoomSocket.on("decline", (message: string) => {
+            setShowPopup(false)
+            console.log(message)
+        })
+    }, [notification])
+
+
     const handleClick = (index: number) => {
         gamesSocket.emit("move", gameId, user_id, index)
-        console.log("After emit move")
     }
 
 
     const startNewGame = async () => {
         setShowPopup(true)
-        setWinnerIndexes(Array(3).fill(null))
-        setWinner(undefined)
-        setDraw(false)
+        clearBoard();
         awaitingRoomSocket.emit("await", user_id)
-        awaitingRoomSocket.on('gameid', ( gameId ) => {
-            setupGameInfo(navigate, gameId)
-            navigate(0);
-            setShowPopup(false)
-        })
-        setBoard(Array(9).fill(null))
     };
 
 
@@ -141,8 +156,54 @@ const Game: React.FC = () => {
     }
 
 
+    const handleRematch = () => {
+        awaitingRoomSocket.emit("awaiting_for_rematch", user_id, gameId)
+        setShowPopup(true);
+    }
+
+
+    const handleRematchAgree = () => {
+        clearBoard()
+        awaitingRoomSocket.emit("start_rematch", rivalUser, user_id)
+        setNotification(false)
+        console.log("HANDLE REMATCH AGREEE")
+    }
+
+
+    const handleRematchDecline = () => {
+        console.log("HANDLE REMATCH DECLINE")
+        awaitingRoomSocket.emit("decline_rematch", rivalUser, user_id)
+        setNotification(false)
+        setShowPopup(false)
+    }
+
+
+    const joinRoom = () => {
+        awaitingRoomSocket.emit("join_room", user_id)
+        console.log(`Join room function`)
+    }
+
+
+    const clearBoard = () => {
+        setWinnerIndexes(Array(3).fill(null))
+        setWinner(undefined)
+        setDraw(false)
+        setBoard(Array(9).fill(null))
+    }
+
+
     return (
         <>
+            {notification && (
+                <Notification
+                    imgSrc="/balloon.svg"
+                    notificationText="User wanna rematch"
+                    firstButtonText='Agree'
+                    firstOnClick={handleRematchAgree}
+                    secondButtonText="Decline"
+                    secondOnClick={handleRematchDecline}
+                />
+            )}
             <div className="game">
                 <p className='game_text'>
                     {playerRole}
@@ -152,12 +213,14 @@ const Game: React.FC = () => {
                 </p>
                 <Board squares={board} handleClick={handleClick} winningIndexes={winnerIndexes} />
                 <Button className='game_button' onClick={startNewGame}>Start a new game</Button>
+                <Button className='game_button' onClick={handleGoToMain}> Go to main page </Button>
+                <Button className='game_button' onClick={handleRematch}> Rematch </Button>
             </div>
             <Chat gameId={gameId} />
             {showPopup && (
                 <PopUp
                     imgSrc="/loading.svg"
-                    text="Looking for another player..."
+                    text="Awaiting for another player..."
                     buttonText='Close'
                     onClick={handleStopLooking}
                 />
@@ -166,9 +229,13 @@ const Game: React.FC = () => {
                 <PopUp
                     imgSrc="/balloon.svg"
                     text={`Congratulations! The winner is ${winner}`!}
-                    buttonText='Start a new game'
-                    onClick={startNewGame}
+                    buttonText='Rematch'
+                    onClick={handleRematch}
                     secondButton={{
+                        text: "Start a new game",
+                        onClick: startNewGame,
+                    }}
+                    optionalButton={{
                         text: "Go to the main page",
                         onClick: handleGoToMain,
                     }}
@@ -178,9 +245,13 @@ const Game: React.FC = () => {
                 <PopUp
                     imgSrc="/balloon.svg"
                     text="This is the draw!"
-                    buttonText='Start a new game'
-                    onClick={startNewGame}
+                    buttonText='Rematch'
+                    onClick={handleRematch}
                     secondButton={{
+                        text: "Start a new game",
+                        onClick: startNewGame,
+                    }}
+                    optionalButton={{
                         text: "Go to the main page",
                         onClick: handleGoToMain,
                     }}

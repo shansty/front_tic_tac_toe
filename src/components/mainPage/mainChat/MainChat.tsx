@@ -1,44 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { TypeMainChatMessage, TypeSocketError } from '../../../types';
+import { getToken, getIDFromToken } from '../../../utils.ts';
 import { io } from 'socket.io-client';
 import Button from '../../utilsComponent/button/Button.tsx';
-import { getToken, getIDFromToken } from '../../../utils.ts';
-import { getUserRoleForChat, getGameChatMessages } from '../../../axios.ts';
-import { TypeSocketError, TypeGameChatMessage } from '../../../types.ts';
-import './Chat.css'; 
+import "./MainChat.css"
 
-type TypeChatProps = {
-    gameId?: string;
-}  
 
-const gameChatSocket = io("http://localhost:3002/game_chat", {
+const mainChatSocket = io("http://localhost:3002/main_chat", {
     reconnectionDelayMax: 10000,
     reconnection: true,
     withCredentials: true,
 });  
 
-const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
 
-    const [messages, setMessages] = useState<TypeGameChatMessage[]>([]);
+const MainChat = () => {
+
+    const [messages, setMessages] = useState<TypeMainChatMessage[]>([]);
     const [inputMessage, setInputMessage] = useState("");
-    const [sender, setSender] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
-
     const token = getToken();
     const userId = getIDFromToken(token);
 
     useEffect(() => {
-        getUserRoleForChat(gameId as string, userId as number, token, setSender)
-        getGameChatMessages(gameId as string, token, setMessages)
-        gameChatSocket.emit("start_chat", userId)
-        gameChatSocket.on("error-event", (error:TypeSocketError) => {
+        mainChatSocket.emit("start_chat", userId)
+        mainChatSocket.on("error-event", (error:TypeSocketError) => {
             console.error(`Error ${error.message} ${error.code}`);
             alert(error.message);
         })
-    }, [])    
-    
+    }, [])  
 
     useEffect(() => {
-        gameChatSocket.on("receive_message", (message: TypeGameChatMessage) => {
+        mainChatSocket.on("receive_message", (message: TypeMainChatMessage) => {
             console.log("receive_message.start")
             console.dir({messages, message})
 
@@ -47,7 +39,7 @@ const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
         });
         scrollToBottom();
         return () => {
-            gameChatSocket.off("receive_message");
+            mainChatSocket.off("receive_message");
         };
     }, [messages]);
 
@@ -55,21 +47,20 @@ const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
-
+    
 
     const handleSendMessage = () => {
-        gameChatSocket.emit("send_message", userId, gameId, inputMessage)
+        mainChatSocket.emit("send_message", userId, inputMessage)
         setInputMessage('');
         scrollToBottom();
     };
 
-    
+
     return (
         <div className="chat-container">
         <div className="messages-container">
             {messages.map((message, index) => (
             <p key={index} className="message">
-                <strong>{message.sender}</strong> 
                 <strong>({message.username}):</strong>
                 {message.message}
             </p>
@@ -89,6 +80,6 @@ const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
         </div>
         </div>
     );
-};
+}
 
-export default Chat;
+export default MainChat;

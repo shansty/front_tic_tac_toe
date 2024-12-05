@@ -26,6 +26,6 @@
     color: rgb(253, 253, 253);
 }
 
-.secondButton {
-  margin-left: 30px;
+.secondButton, .optionalButton {
+  margin-left: 25px;
 }

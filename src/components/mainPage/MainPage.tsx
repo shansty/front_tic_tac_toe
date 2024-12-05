@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import Button from '../utilsComponent/Button.tsx';
-import './MainPage.css';
+import Button from '../utilsComponent/button/Button.tsx';
 import { getToken, getIDFromToken } from '../../utils.ts'
 import { setupGameInfo } from '../../utils.ts';
-import { Socket, io } from 'socket.io-client';
-import PopUp from '../utilsComponent/PopUp.tsx';
+import { io } from 'socket.io-client';
+import PopUp from '../utilsComponent/popUp/PopUp.tsx';
+import Players from './players/Players.tsx';
+import MainChat from './mainChat/MainChat.tsx';
+import './MainPage.css';
 
-
-const awaitingRoomSocket = io("http://localhost:3002/awaiting_room", {
+export const awaitingRoomSocket = io("http://localhost:3002/awaiting_room", {
     reconnectionDelayMax: 10000,
     reconnection: true,
-    transports : ['websocket'],
-}) as Socket;
-
+});
 
 const MainPage: React.FC = () => {
 
@@ -25,8 +24,8 @@ const MainPage: React.FC = () => {
 
     awaitingRoomSocket.on('connect_error', (error) => {
         console.error('Socket connection error:', error);
-    }); 
-  
+    });
+
 
     const handleClick = async () => {
         if (awaitingRoomSocket) {
@@ -35,7 +34,7 @@ const MainPage: React.FC = () => {
             awaitingRoomSocket.on("gameid", (gameId) => {
                 console.log(gameId);
                 console.dir({ gameId });
-    
+
                 setShowPopup(false);
                 setupGameInfo(navigate, gameId);
             });
@@ -45,24 +44,26 @@ const MainPage: React.FC = () => {
 
     const handleStopLooking = () => {
         if (awaitingRoomSocket) {
-            awaitingRoomSocket.emit("stop_awaiting", user_id); 
-            awaitingRoomSocket.off("gameid"); 
-            setShowPopup(false); 
+            awaitingRoomSocket.emit("stop_awaiting", user_id);
+            awaitingRoomSocket.off("gameid");
+            setShowPopup(false);
         }
     };
-   
 
-    return(
+
+    return (
         <>
             <Button className='main_button' onClick={handleClick}>Start the game</Button>
+            <Players />
             {showPopup && (
-                    <PopUp 
-                        imgSrc= "/loading.svg"
-                        text="Looking for another player..." 
-                        buttonText='Close'
-                        onClick={handleStopLooking}
-                    />
-                )}
+                <PopUp
+                    imgSrc="/loading.svg"
+                    text="Looking for another player..."
+                    buttonText='Close'
+                    onClick={handleStopLooking}
+                />
+            )}
+            <MainChat />
         </>
     );
 }

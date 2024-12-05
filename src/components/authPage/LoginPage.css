@@ -1,0 +1,32 @@
+.auth_form {
+    position: absolute;
+    width: 30%;
+    max-width: 400px;
+    height: 350px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid rgba(251, 79, 0);
+    border-radius: 10px;
+    align-items: flex-start; 
+    justify-content: center;
+    padding: 10px;
+    background-color: rgba(251, 79, 0, 0.1);
+  }
+
+  .auth_fields {
+    background-color: rgba(255, 255, 255, 0.1);
+    margin-top: 2%;
+    width: 95%;
+    height: 30px;
+    margin-bottom: 10px;
+  }
+
+.form_button {
+    margin-top: 10%;
+    margin-left: 2%;
+  }
+
+.form_text:hover {
+    cursor: pointer;
+}  

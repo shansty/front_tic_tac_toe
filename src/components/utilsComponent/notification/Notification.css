@@ -1,0 +1,61 @@
+.notification {
+    left: 85%;
+    margin-top: 10px;
+    position: fixed;
+    width: 210px;
+    height: 70px;
+    margin-left: 5px;
+    border-radius: 5%;
+    border-color: rgb(255, 255, 255);
+    background-color: #f9f9f92f;
+    box-shadow: 0px 0px 10px rgba(251, 79, 0, 0.7);
+    transition: 0.5s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .notification_text_container {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+  }
+  .notification p {
+    margin-bottom: 20px;
+    margin-left: 5px;
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+  }
+
+
+  
+.notification img {
+    width: 15%;
+    margin-left: 5px;
+    margin-right: 10px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+  }
+
+  .button_agree {
+    border: 1px solid rgba(251, 79, 0);
+    border-radius: 20%;
+    color: rgb(255, 255, 255);
+    margin-right: 5px;
+    background-color: rgba(251, 79, 0, 0.7);
+
+  }
+
+  .buttons{
+    margin-top: -6%;
+  }
+
+  .button_decline{
+    border: 1px solid rgba(251, 79, 0);
+    border-radius: 20%;
+    color: rgb(255, 255, 255);
+    margin-left: 5px;
+    background-color: rgba(251, 79, 0, 0.7);
+  }
+  
