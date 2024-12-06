@@ -151,6 +151,12 @@ const Game: React.FC = () => {
         navigate("/main");
     }
 
+    const handleClosePopup = () => {
+        setShowPopup(false);
+        setWinner(undefined)
+        setDraw(false)
+    };
+
 
     const handleRematch = () => {
         awaitingRoomSocket.emit("awaiting_for_rematch", user_id, gameId)
@@ -235,6 +241,9 @@ const Game: React.FC = () => {
                         text: "Go to the main page",
                         onClick: handleGoToMain,
                     }}
+                    closeButtononClose={{
+                        onClick: handleClosePopup
+                    }}
                 />
             )}
             {draw && (
@@ -250,6 +259,9 @@ const Game: React.FC = () => {
                     optionalButton={{
                         text: "Go to the main page",
                         onClick: handleGoToMain,
+                    }}
+                    closeButtononClose={{
+                        onClick: handleClosePopup
                     }}
                 />
             )}

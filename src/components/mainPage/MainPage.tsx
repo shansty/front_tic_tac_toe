@@ -50,6 +50,10 @@ const MainPage: React.FC = () => {
         }
     };
 
+    const handleClosePopup = () => {
+        setShowPopup(false);
+    };
+
 
     return (
         <>

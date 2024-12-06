@@ -15,6 +15,9 @@ interface PopUpProps {
     text: string;
     onClick: () => void;
   };
+  closeButtononClose?: {
+    onClick: () => void;
+  }; 
 }
 
 
@@ -24,11 +27,15 @@ const PopUp: React.FC<PopUpProps> = ({
   onClick,
   buttonText,
   secondButton,
-  optionalButton
+  optionalButton,
+  closeButtononClose
 }) => {
 
   return (
     <div className='popUp'>
+      {closeButtononClose && (
+        <button className='close_btn' onClick={closeButtononClose?.onClick}>X</button>
+        )}
       <img src={imgSrc} alt="PopUp image" />
       <p>{text}</p>
       <div className="buttonContainer">
