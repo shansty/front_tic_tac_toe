@@ -10,6 +10,7 @@ const playersSocket = io("http://localhost:3002/players", {
 
 type Player = {
     user_name: string;
+    winner_games: number;
 };
 
 const Players:React.FC= () => {
@@ -77,6 +78,7 @@ const Players:React.FC= () => {
                     {showedPlayers.map((showedPlayer, index) => (
                         <div key={index} className="player-container">
                             <p className="player">{showedPlayer.user_name}</p>
+                            <p className="player_score">Score: {showedPlayer.winner_games}</p>
                             <button onClick={() => handleClick(showedPlayer.user_name)}>challenge</button>
                         </div>
                     ))}

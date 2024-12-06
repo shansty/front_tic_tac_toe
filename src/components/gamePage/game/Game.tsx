@@ -45,7 +45,7 @@ const Game: React.FC = () => {
         const winner = calculateWinner(board, setWinnerIndexes)
         setWinner(winner)
         if(winner) {
-            makeGameFightStatusComplited(user_id, gameId as string, token)
+            makeGameFightStatusComplited(winner, user_id, gameId as string, token)
             console.log(`CHEEEEEEEEEEEEEECK 1`)
         }
     }, [board])
@@ -92,11 +92,7 @@ const Game: React.FC = () => {
             setBoard(board)
             if (!board.includes(null) && (winner !== "X" || winner !== "O")) {
                 setDraw(true)
-                makeGameFightStatusComplited(user_id, gameId as string, token)
-                console.log(`CHEEEEEEEEEEEEEECK 2`)
-                // 
-                // 
-                // 
+                makeGameFightStatusComplited("", user_id, gameId as string, token)
             }
             console.log(` Board ${board}`)
         });

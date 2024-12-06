@@ -40,6 +40,12 @@
 .player-container .player {
     font-size: 17px;
     margin: 0;
+    flex-grow: 1;
+}
+
+.player_score {
+    margin-right: 5px; 
+    flex-grow: 0;
 }
 
 .player-container button {

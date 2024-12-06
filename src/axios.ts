@@ -144,10 +144,10 @@ export const getUserGamesData = async (userId: number, token: string, setGamesDa
     }
 }
 
-export const makeGameFightStatusComplited = async (userId:number,  gameId:string, token:string) => {
+export const makeGameFightStatusComplited = async (winner:string, userId:number,  gameId:string, token:string) => {
     const CHANGE_GAME_FIGHT_STATUS_URL = `http://localhost:3001/gameData/${userId}`
     try {
-        const response = await axios.put(CHANGE_GAME_FIGHT_STATUS_URL, {gameId},
+        const response = await axios.put(CHANGE_GAME_FIGHT_STATUS_URL, {gameId, winner},
             {
                 headers: {
                     'Access-Control-Allow-Origin': '*',
