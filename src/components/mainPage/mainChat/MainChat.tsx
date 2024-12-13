@@ -20,6 +20,7 @@ const MainChat = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const token = getToken();
     const userId = getIDFromToken(token);
+    console.dir({userId})
 
     useEffect(() => {
         mainChatSocket.emit("start_chat", userId)

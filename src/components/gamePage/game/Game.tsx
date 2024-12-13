@@ -7,7 +7,7 @@ import PopUp from '../../utilsComponent/popUp/PopUp.tsx';
 import Chat from '../game_chat/Chat.tsx';
 import Notification from '../../utilsComponent/notification/Notification.tsx';
 import { getToken, getIDFromToken, calculateWinner, setupGameInfo } from '../../../utils.ts';
-import { getGameResult, makeGameFightStatusComplited } from '../../../axios.ts';
+import { getGameResult, makeGameFightStatusComplitedAndUpdateGoogkeSheet } from '../../../axios.ts';
 import { TypeGame, TypeSocketError, EnumRole } from '../../../types.ts'
 import './Game.css'
 
@@ -42,11 +42,17 @@ const Game: React.FC = () => {
 
 
     useEffect(() => {
-        const winner = calculateWinner(board, setWinnerIndexes)
+        const winner = calculateWinner(board, setWinnerIndexes)?.winner
+        const winnerIndexes = calculateWinner(board, setWinnerIndexes)?.winnerIndexes
+        console.log(`Inside useEffect in GamePage`)
+        console.dir({ winnerIndexes })
+        console.dir({ winner })
+        setWinnerIndexes(winnerIndexes as number[])
         setWinner(winner)
-        if(winner) {
-            makeGameFightStatusComplited(winner, user_id, gameId as string, token)
-            console.log(`CHEEEEEEEEEEEEEECK 1`)
+        if (winner) {
+            console.dir({ winnerIndexes })
+            console.dir({ winner })
+            makeGameFightStatusComplitedAndUpdateGoogkeSheet(winner, winnerIndexes as number[], user_id, gameId as string, token)
         }
     }, [board])
 
@@ -90,9 +96,14 @@ const Game: React.FC = () => {
                 })
             }
             setBoard(board)
+
+            console.log(`Inside useEffect in GamePage [gameId]`)
+            console.dir({ winnerIndexes })
+            console.dir({ winner })
+
             if (!board.includes(null) && (winner !== "X" || winner !== "O")) {
                 setDraw(true)
-                makeGameFightStatusComplited("", user_id, gameId as string, token)
+                makeGameFightStatusComplitedAndUpdateGoogkeSheet("", [], user_id, gameId as string, token)
             }
             console.log(` Board ${board}`)
         });
@@ -112,7 +123,7 @@ const Game: React.FC = () => {
     }, [gameId]);
 
 
-    useEffect( () => {
+    useEffect(() => {
         awaitingRoomSocket.on("rematch", (rival_user_id: number) => {
             console.log("AWAITING REMATCH IS WORK")
             setRivalUser(rival_user_id)
@@ -187,6 +198,9 @@ const Game: React.FC = () => {
 
 
     const clearBoard = () => {
+        console.log(`Inside clearBoard`)
+        console.dir({ winnerIndexes })
+        console.dir({ winner })
         setWinnerIndexes(Array(3).fill(null))
         setWinner(undefined)
         setDraw(false)

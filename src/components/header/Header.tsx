@@ -24,7 +24,7 @@ const Header = () => {
                     Notifications
                 </p>
                 <p className='header_info' onClick={() => toggleList("allGames")}>
-                    Your games
+                    Your challenges hisory
                 </p>
             </div>
             {visibleList === "notifications" && (

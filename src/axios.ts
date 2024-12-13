@@ -144,10 +144,12 @@ export const getUserGamesData = async (userId: number, token: string, setGamesDa
     }
 }
 
-export const makeGameFightStatusComplited = async (winner:string, userId:number,  gameId:string, token:string) => {
+export const makeGameFightStatusComplitedAndUpdateGoogkeSheet = async (winner:string, winnerIndexes: number[], userId:number,  gameId:string, token:string) => {
     const CHANGE_GAME_FIGHT_STATUS_URL = `http://localhost:3001/gameData/${userId}`
+    console.log(winnerIndexes)
+    console.dir({winnerIndexes})
     try {
-        const response = await axios.put(CHANGE_GAME_FIGHT_STATUS_URL, {gameId, winner},
+        const response = await axios.put(CHANGE_GAME_FIGHT_STATUS_URL, {gameId, winner, winnerIndexes},
             {
                 headers: {
                     'Access-Control-Allow-Origin': '*',

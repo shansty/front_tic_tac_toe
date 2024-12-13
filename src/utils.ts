@@ -1,23 +1,29 @@
+import { jwtDecode } from "jwt-decode";
+
+interface CustomJwtPayload {
+    id: number;
+    exp: number;
+    iat: number;
+  }
+
+
 export function getIDFromToken(token:string):number | null {
     if(!token) {
         return null
     } else {
-        let tokenParts = token.split('.');
-        let payload = JSON.parse(atob(tokenParts[1]));
-        console.log(payload.id)
-        return payload.id;
+        const decoded: CustomJwtPayload = jwtDecode(token);
+        return decoded.id;
     }
 }
 
 
 export function getToken(): string  {
-    const token: string = localStorage.getItem("token") as string
-    if(!token) {
+    const token = localStorage.getItem("token") as string
+    if(!token || token === null) {
         window.location.assign("http://localhost:3000/")
     } else {
-        let tokenParts = token.split('.');
-        let payload = JSON.parse(atob(tokenParts[1]));
-        let exparation = payload.exp;
+        const decoded = jwtDecode(token);
+        let exparation = decoded.exp as number;
         if(Date.now() > (exparation * 1000)){
             window.location.assign("http://localhost:3000/")
         } 
@@ -43,8 +49,14 @@ export function calculateWinner(squares: SquaresArray, setWinnerIndexes: (value:
     for(let i = 0; i < lines.length; i++) {
         const [a, b, c] = lines[i];
         if(squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-            setWinnerIndexes(lines[i])
-            return squares[a]
+            // setWinnerIndexes(lines[i])
+            console.log('inside calculateWinner');
+            const log = lines[i]
+            console.dir({log});
+            return {
+                winner: squares[a],
+                winnerIndexes:lines[i]
+            }
         }
     }
 }
