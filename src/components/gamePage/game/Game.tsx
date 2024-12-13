@@ -23,7 +23,6 @@ export const awaitingRoomSocket = io("http://localhost:3002/awaiting_room", {
 });
 
 
-
 const Game: React.FC = () => {
     const { id: gameId } = useParams();
     const token = getToken();
@@ -44,14 +43,9 @@ const Game: React.FC = () => {
     useEffect(() => {
         const winner = calculateWinner(board, setWinnerIndexes)?.winner
         const winnerIndexes = calculateWinner(board, setWinnerIndexes)?.winnerIndexes
-        console.log(`Inside useEffect in GamePage`)
-        console.dir({ winnerIndexes })
-        console.dir({ winner })
         setWinnerIndexes(winnerIndexes as number[])
         setWinner(winner)
         if (winner) {
-            console.dir({ winnerIndexes })
-            console.dir({ winner })
             makeGameFightStatusComplitedAndUpdateGoogkeSheet(winner, winnerIndexes as number[], user_id, gameId as string, token)
         }
     }, [board])
@@ -78,14 +72,12 @@ const Game: React.FC = () => {
 
         gamesSocket.emit("start_game", user_id, gameId)
 
-
         gamesSocket.on("determining_the_order_of_moves", (msg: string) => {
             setPlayerRole(msg);
         })
 
         gamesSocket.on(`update-${gameId}`, (game: TypeGame) => {
             const board = Array(9).fill(null)
-            console.dir({ game })
             const gameUserX = game.game_user.find(gu => gu.role === EnumRole.PLAYER_X)
             if (gameUserX) {
                 const gameUserXId = gameUserX.id
@@ -96,11 +88,6 @@ const Game: React.FC = () => {
                 })
             }
             setBoard(board)
-
-            console.log(`Inside useEffect in GamePage [gameId]`)
-            console.dir({ winnerIndexes })
-            console.dir({ winner })
-
             if (!board.includes(null) && (winner !== "X" || winner !== "O")) {
                 setDraw(true)
                 makeGameFightStatusComplitedAndUpdateGoogkeSheet("", [], user_id, gameId as string, token)
@@ -125,7 +112,6 @@ const Game: React.FC = () => {
 
     useEffect(() => {
         awaitingRoomSocket.on("rematch", (rival_user_id: number) => {
-            console.log("AWAITING REMATCH IS WORK")
             setRivalUser(rival_user_id)
             setNotification(true)
         })
@@ -179,12 +165,10 @@ const Game: React.FC = () => {
         clearBoard()
         awaitingRoomSocket.emit("start_rematch", rivalUser, user_id)
         setNotification(false)
-        console.log("HANDLE REMATCH AGREEE")
     }
 
 
     const handleRematchDecline = () => {
-        console.log("HANDLE REMATCH DECLINE")
         awaitingRoomSocket.emit("decline_rematch", rivalUser, user_id)
         setNotification(false)
         setShowPopup(false)
@@ -198,9 +182,6 @@ const Game: React.FC = () => {
 
 
     const clearBoard = () => {
-        console.log(`Inside clearBoard`)
-        console.dir({ winnerIndexes })
-        console.dir({ winner })
         setWinnerIndexes(Array(3).fill(null))
         setWinner(undefined)
         setDraw(false)

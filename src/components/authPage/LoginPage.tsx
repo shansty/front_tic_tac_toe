@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 import axios from 'axios';
+import { signIn, signUp } from '../../axios.ts';
 import Button from '../utilsComponent/button/Button.tsx';
 import './LoginPage.css'
 
 
 const LoginPage: React.FC = () => {
 
-    const LOGIN_URL = 'http://localhost:3001/login'
-    const REGISTER_URL = 'http://localhost:3001/register';
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("")
     const [username, setUsername] = useState("");
@@ -16,80 +15,26 @@ const LoginPage: React.FC = () => {
 
     const navigate = useNavigate();
 
-
-
-    // useEffect(() => {
-    //         window.history.replaceState({}, document.title, '/main');
-    // }, [navigate]);
-
-
-    const signIn = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-
-        try {
-            e.preventDefault();
-            const response = await axios.post(LOGIN_URL, { username, password },
-                { headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' } });
-
-            const token = response?.data?.token;
-            localStorage.setItem("token", token);
-
-            setUsername('');
-            setPassword('');
-            navigate("/main")
-
-        } catch (err) {
-            console.error(err)
-            if (!err?.response) {
-                console.log('No Server Response')
-            } else if (err.response?.status === 401) {
-                console.log('Invalid username or password')
-            } else {
-                console.log('Some error')
-            }
-            window.alert(`Error: ${err}`);
-        }
+    const login = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        signIn(e, username, password, setUsername, setPassword)
+        navigate("/main")
     }
 
-    const signUp = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        e.preventDefault();
-        setIsRegister(!isRegister)
-        console.dir({ username })
-        try {
-            await axios.post(REGISTER_URL, { email, password, username },
-                { headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' } });
-            setEmail('');
-            setPassword('');
-            setUsername('');
-
-        } catch (err) {
-            console.error(err)
-            if (!err?.response) {
-                console.log('No Server Response')
-            } else if (err.response?.status === 401) {
-                console.log('Invalid username or password')
-            } else {
-                console.log('Some error')
-            }
-            window.alert(`Error: ${err}`);
-        }
+    const register = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        signUp(e, setIsRegister, isRegister, email, password, username, setEmail, setUsername, setPassword)
     }
 
     const handleClick = () => {
         setIsRegister(!isRegister)
     }
 
-    function navigated(url: string){
+    function navigated(url: string) {
         window.location.href = url;
-      }
-      
-      
+    }
+
     async function auth() {
         const response = await axios.post('http://localhost:3001/auth/google');
-
-        console.dir({response})
-        console.log(response);
         navigated(response.data.url);
-
     }
 
     return (
@@ -138,12 +83,18 @@ const LoginPage: React.FC = () => {
                     id="password"
                     onChange={(e) => setPassword(e.target.value)} />
 
-                {isRegister && (<Button className="form_button" onClick={signIn}>Sign In</Button>)}
-                {isRegister && (<p className="form_text" onClick={handleClick}>Don't have an account? Click to register.</p>)}
-                {!isRegister && (<Button className="form_button" onClick={signUp} >Sign Up</Button>)}
-                <button className="btn-auth" type="button" onClick={() => auth()}>
-                    <img className="btn-auth-img" src='/btn_google_signin_dark_pressed_web.png' alt='google sign in' />
-                </button>
+                {isRegister && (
+                    <>
+                        <div className='sign_in_btns'>
+                            <Button onClick={login}>Sign In</Button>
+                            <button className="btn-auth" type="button" onClick={() => auth()}>
+                                <img className="btn-auth-img" src='/google_btn.png' alt='google sign in' />
+                            </button>
+                        </div>
+                        <p className="form_text" onClick={handleClick}>Don't have an account? Click to register.</p>
+                    </>)}
+
+                {!isRegister && (<Button className="form_button" onClick={register} >Sign Up</Button>)}
             </form>
         </>
     );

@@ -2,6 +2,57 @@ import axios from "axios";
 import { EnumRole, TypeGame, TypeGameChatMessage, TypeNotification, TypeUserGameData } from "./types.ts";
 
 
+export const signIn = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, 
+    username:string, 
+    password:string, 
+    setUsername: React.Dispatch<React.SetStateAction<string>>,
+    setPassword: React.Dispatch<React.SetStateAction<string>>
+) => {
+    const LOGIN_URL = 'http://localhost:3001/login'
+    try {
+        e.preventDefault();
+        const response = await axios.post(LOGIN_URL, { username, password },
+            { headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' } });
+
+        const token = response?.data?.token;
+        localStorage.setItem("token", token);
+
+        setUsername('');
+        setPassword('');
+
+    } catch (err) {
+        window.alert(`Error: ${err}`);
+    }
+}
+
+
+export const signUp = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, 
+    setIsRegister:React.Dispatch<React.SetStateAction<boolean>>, 
+    isRegister: boolean, 
+    email: string, 
+    password: string, 
+    username: string,
+    setEmail: React.Dispatch<React.SetStateAction<string>>,
+    setUsername: React.Dispatch<React.SetStateAction<string>>,
+    setPassword: React.Dispatch<React.SetStateAction<string>>,
+) => {
+
+    const REGISTER_URL = 'http://localhost:3001/register';
+    e.preventDefault();
+    setIsRegister(!isRegister)
+    try {
+        await axios.post(REGISTER_URL, { email, password, username },
+            { headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' } });
+        setEmail('');
+        setPassword('');
+        setUsername('');
+
+    } catch (err) {
+        window.alert(`Error: ${err}`);
+    }
+}
+
+
 export const getGameResult = async (gameId: string, token: string, board: string[], setBoard: React.Dispatch<React.SetStateAction<string[]>>) => {
     const GET_GAME_RESULTS_URL = `http://localhost:3001/game/${gameId}`
     try {
@@ -45,15 +96,11 @@ export const getUserRoleForChat = async (gameId: string, id: number, token: stri
             });
         const userRole = response.data.user_role;
         setUserRole(userRole)
-        // if(userRole === "PLAYER_X") {
-        //     setUserRole("X");
-        // } else {
-        //     setUserRole("O");
-        // }
     } catch (err) {
         window.alert(`Error: ${err}`);
     }
 }
+
 
 export const getGameChatMessages = async (gameId: string, token: string, setMessages: React.Dispatch<React.SetStateAction<TypeGameChatMessage[]>>) => {
     console.log(`Axios get game chat messages start`)
@@ -75,6 +122,7 @@ export const getGameChatMessages = async (gameId: string, token: string, setMess
     }
 }
 
+
 export const getNotifications = async (userId: number, token: string, setNotifications:  React.Dispatch<React.SetStateAction<TypeNotification[]>>) => {
     const GET_NOTIFICATIONS_URL = `http://localhost:3001/notifications/${userId}`
     try {
@@ -93,6 +141,7 @@ export const getNotifications = async (userId: number, token: string, setNotific
     }
 }
 
+
 export const declineNotifications = async (userId: number, rival_username:string, token: string) => {
     const DECLINE_NOTIFICATIONS_URL = `http://localhost:3001/notifications/${userId}`
     try {
@@ -108,6 +157,7 @@ export const declineNotifications = async (userId: number, rival_username:string
         window.alert(`Error: ${err}`);
     }
 }
+
 
 export const acceptNotifications = async (userId: number, rival_username:string, token: string) => {
     const ACCEPT_NOTIFICATIONS_URL = `http://localhost:3001/notifications/accept/${userId}`
@@ -125,6 +175,7 @@ export const acceptNotifications = async (userId: number, rival_username:string,
     }
 }
 
+
 export const getUserGamesData = async (userId: number, token: string, setGamesData: React.Dispatch<React.SetStateAction<TypeUserGameData[]>>) => {
     const GET_USER_GAMES_DATA_URL = `http://localhost:3001/gameData/${userId}`
     try {
@@ -138,18 +189,18 @@ export const getUserGamesData = async (userId: number, token: string, setGamesDa
             });
         const games = response.data.games 
         setGamesData(games)   
-        console.dir({games})
     } catch (err) {
         window.alert(`Error: ${err}`);
     }
 }
+
 
 export const makeGameFightStatusComplitedAndUpdateGoogkeSheet = async (winner:string, winnerIndexes: number[], userId:number,  gameId:string, token:string) => {
     const CHANGE_GAME_FIGHT_STATUS_URL = `http://localhost:3001/gameData/${userId}`
     console.log(winnerIndexes)
     console.dir({winnerIndexes})
     try {
-        const response = await axios.put(CHANGE_GAME_FIGHT_STATUS_URL, {gameId, winner, winnerIndexes},
+        await axios.put(CHANGE_GAME_FIGHT_STATUS_URL, {gameId, winner, winnerIndexes},
             {
                 headers: {
                     'Access-Control-Allow-Origin': '*',
