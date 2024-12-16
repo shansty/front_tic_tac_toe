@@ -16,8 +16,7 @@ const LoginPage: React.FC = () => {
     const navigate = useNavigate();
 
     const login = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        signIn(e, username, password, setUsername, setPassword)
-        navigate("/main")
+        signIn(e, username, password, setUsername, setPassword, navigate)
     }
 
     const register = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
