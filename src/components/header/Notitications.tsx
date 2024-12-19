@@ -27,9 +27,9 @@ const Notitications = () => {
     }
 
     return (
-        <div className='notifications_container'>
+        <div className='data_container'>
             {notifications.map((notification, index) => (
-                <div className="notifications" key={index}>
+                <div className="data" key={index}>
                     <p >
                         {notification.text}
                     </p>

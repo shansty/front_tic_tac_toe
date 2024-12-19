@@ -1,4 +1,40 @@
 .main_button {
-    margin-left: 10%;
-    margin-top: 100px;
+    position: relative;
+    margin-top: 10%;
+    width: 10%;
+}
+
+.main_page_container {
+    gap: 10px;
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.container, .main-chat-container {
+    flex: 1 1 1;
+    max-height: 100vh; 
+    overflow: hidden;
+}
+
+@media (max-width: 1000px) {
+    .container, .main-chat-container {
+        margin-left: 0%;
+        margin-right: 0%;
+    }
+}
+
+@media (max-width: 900px) {
+    .main_page_container {
+        margin-top: 12%;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        flex: 0 1 0;
+        gap: 30px;
+    }
+    .main_button {
+        margin-top: 2%;
+    }
 }

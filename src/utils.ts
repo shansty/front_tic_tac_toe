@@ -4,11 +4,10 @@ interface CustomJwtPayload {
     id: number;
     exp: number;
     iat: number;
-  }
+}
 
-
-export function getIDFromToken(token:string):number | null {
-    if(!token) {
+export function getIDFromToken(token: string | undefined): number | null {
+    if (!token) {
         return null
     } else {
         const decoded: CustomJwtPayload = jwtDecode(token);
@@ -17,16 +16,16 @@ export function getIDFromToken(token:string):number | null {
 }
 
 
-export function getToken(): string  {
+export function getToken(): string {
     const token = localStorage.getItem("token") as string
-    if(!token || token === null) {
+    if (!token || token === null) {
         window.location.assign("http://localhost:3000/")
     } else {
         const decoded = jwtDecode(token);
         let exparation = decoded.exp as number;
-        if(Date.now() > (exparation * 1000)){
+        if (Date.now() > (exparation * 1000)) {
             window.location.assign("http://localhost:3000/")
-        } 
+        }
     }
     return token;
 }
@@ -46,26 +45,33 @@ export function calculateWinner(squares: SquaresArray, setWinnerIndexes: (value:
         [0, 4, 8],
         [2, 4, 6]
     ]
-    for(let i = 0; i < lines.length; i++) {
+    for (let i = 0; i < lines.length; i++) {
         const [a, b, c] = lines[i];
-        if(squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+        if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
             // setWinnerIndexes(lines[i])
             console.log('inside calculateWinner');
             const log = lines[i]
-            console.dir({log});
+            console.dir({ log });
             return {
                 winner: squares[a],
-                winnerIndexes:lines[i]
+                winnerIndexes: lines[i]
             }
         }
     }
 }
 
 
-export const setupGameInfo = async (navigate:Function, gameId:string) => {
+export const setupGameInfo = async (navigate: Function, gameId: string) => {
     try {
         navigate(`/game/${gameId}`)
     } catch (err) {
         window.alert(`Error: ${err}`);
+    }
+}
+
+export const getHeaders = (token: string) => {
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
     }
 }

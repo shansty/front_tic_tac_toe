@@ -6,21 +6,21 @@ import Button from '../../utilsComponent/button/Button.tsx';
 import "./MainChat.css"
 
 
-const mainChatSocket = io("http://localhost:3002/main_chat", {
-    reconnectionDelayMax: 10000,
-    reconnection: true,
-    withCredentials: true,
-});  
-
-
-const MainChat = () => {
+const MainChat:React.FC = () => {
 
     const [messages, setMessages] = useState<TypeMainChatMessage[]>([]);
     const [inputMessage, setInputMessage] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const token = getToken();
     const userId = getIDFromToken(token);
-    console.dir({userId})
+    
+    const mainChatSocket = io(`${process.env.REACT_APP_SOCKET_HOST}/main_chat`, {
+        reconnectionDelayMax: Number(process.env.REACT_APP_MAX_DELAY),
+        reconnection: true,
+        auth: {
+            token
+        }
+    });  
 
     useEffect(() => {
         mainChatSocket.emit("start_chat", userId)
@@ -58,10 +58,10 @@ const MainChat = () => {
 
 
     return (
-        <div className="chat-container">
-        <div className="messages-container">
+        <div className="main-chat-container">
+        <div className="main-messages-container">
             {messages.map((message, index) => (
-            <p key={index} className="message">
+            <p key={index} className="main-message">
                 <strong>({message.username}):</strong>
                 {message.message}
             </p>
@@ -69,15 +69,15 @@ const MainChat = () => {
             <div ref={messagesEndRef}></div>
         </div>
 
-        <div className="input-container">
+        <div className="main-input-container">
             <input
             type="text"
             placeholder="Type your message..."
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
-            className="message-input"
+            className="main-message-input"
             />
-            <Button width='150px' className="send-button" onClick={handleSendMessage}>Send Message</Button>
+            <Button width='150px' className="main-send-button" onClick={handleSendMessage}>Send Message</Button>
         </div>
         </div>
     );

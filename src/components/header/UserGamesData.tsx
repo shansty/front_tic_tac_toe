@@ -17,15 +17,16 @@ const GamesData = () => {
     }, [])
 
     return (
-        <div className='game_data_container'>
+        <div className='data_container'>
             {gamesData.map((gameData, index) => (
-                <div className="game_data" key={index}>
+                <div className="data" key={index}>
                     <p >
                         Game status with {gameData.rival_username} in position {gameData.position.toLowerCase()} is {gameData.game_status}
                     </p>
-                    <div className='game_data_btn'>
-                        <p>Go to the game: <a href={gameData.game_link}>{gameData.game_link}</a></p>
-                    </div>
+                    <p>Go to the game:
+                        <br />
+                        <a href={gameData.game_link} className='game_link'>{gameData.game_link}</a>
+                    </p>
                 </div>
             ))}
         </div>

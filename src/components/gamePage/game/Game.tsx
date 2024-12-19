@@ -5,22 +5,12 @@ import Board from '../board/Board.tsx';
 import Button from '../../utilsComponent/button/Button.tsx';
 import PopUp from '../../utilsComponent/popUp/PopUp.tsx';
 import Chat from '../game_chat/Chat.tsx';
+import Header from '../../header/Header.tsx';
 import Notification from '../../utilsComponent/notification/Notification.tsx';
 import { getToken, getIDFromToken, calculateWinner, setupGameInfo } from '../../../utils.ts';
-import { getGameResult, makeGameFightStatusComplitedAndUpdateGoogkeSheet } from '../../../axios.ts';
+import { getGameResult, makeGameFightStatusComplitedAndUpdateGoogleSheet } from '../../../axios.ts';
 import { TypeGame, TypeSocketError, EnumRole } from '../../../types.ts'
 import './Game.css'
-
-export const gamesSocket = io("http://localhost:3002/games", {
-    reconnectionDelayMax: 10000,
-    reconnection: true,
-    withCredentials: true,
-});
-
-export const awaitingRoomSocket = io("http://localhost:3002/awaiting_room", {
-    reconnectionDelayMax: 10000,
-    reconnection: true,
-});
 
 
 const Game: React.FC = () => {
@@ -39,6 +29,22 @@ const Game: React.FC = () => {
     const [notification, setNotification] = useState(false);
     const [rivalUser, setRivalUser] = useState(Number);
 
+    const gamesSocket = io(`${process.env.REACT_APP_SOCKET_HOST}/games`, {
+        reconnectionDelayMax: Number(process.env.REACT_APP_MAX_DELAY),
+        reconnection: true,
+        auth: {
+            token
+        }
+    });
+
+    const awaitingRoomSocket = io(`${process.env.REACT_APP_SOCKET_HOST}/awaiting_room`, {
+        reconnectionDelayMax: Number(process.env.REACT_APP_MAX_DELAY),
+        reconnection: true,
+        auth: {
+            token
+        }
+    });
+
 
     useEffect(() => {
         const winner = calculateWinner(board, setWinnerIndexes)?.winner
@@ -46,7 +52,7 @@ const Game: React.FC = () => {
         setWinnerIndexes(winnerIndexes as number[])
         setWinner(winner)
         if (winner) {
-            makeGameFightStatusComplitedAndUpdateGoogkeSheet(winner, winnerIndexes as number[], user_id, gameId as string, token)
+            makeGameFightStatusComplitedAndUpdateGoogleSheet(winner, winnerIndexes as number[], user_id, gameId as string, token)
         }
     }, [board])
 
@@ -73,7 +79,9 @@ const Game: React.FC = () => {
         gamesSocket.emit("start_game", user_id, gameId)
 
         gamesSocket.on("determining_the_order_of_moves", (msg: string) => {
+            console.log(playerRole)
             setPlayerRole(msg);
+            console.log(playerRole)
         })
 
         gamesSocket.on(`update-${gameId}`, (game: TypeGame) => {
@@ -90,7 +98,7 @@ const Game: React.FC = () => {
             setBoard(board)
             if (!board.includes(null) && (winner !== "X" || winner !== "O")) {
                 setDraw(true)
-                makeGameFightStatusComplitedAndUpdateGoogkeSheet("", [], user_id, gameId as string, token)
+                makeGameFightStatusComplitedAndUpdateGoogleSheet("", [], user_id, gameId as string, token)
             }
             console.log(` Board ${board}`)
         });
@@ -191,6 +199,7 @@ const Game: React.FC = () => {
 
     return (
         <>
+            <Header />
             {notification && (
                 <Notification
                     imgSrc="/balloon.svg"
@@ -201,19 +210,21 @@ const Game: React.FC = () => {
                     secondOnClick={handleRematchDecline}
                 />
             )}
-            <div className="game">
-                <p className='game_text'>
-                    {playerRole}
-                </p>
-                <p className='game_text'>
-                    {winner ? 'The winner is ' + winner : !winner && !draw ? 'Now it is ' + (isXNext ? 'X' : 'O') + ' turn' : "This is the draw!"}
-                </p>
-                <Board squares={board} handleClick={handleClick} winningIndexes={winnerIndexes} />
-                <Button className='game_button' onClick={startNewGame}>Start a new game</Button>
-                <Button className='game_button' onClick={handleGoToMain}> Go to main page </Button>
-                <Button className='game_button' onClick={handleRematch}> Rematch </Button>
+            <div className='game_container'>
+                <div className="game">
+                    <p className='game_text'>
+                        {playerRole}
+                    </p>
+                    <p className='game_text'>
+                        {winner ? 'The winner is ' + winner : !winner && !draw ? 'Now it is ' + (isXNext ? 'X' : 'O') + ' turn' : "This is the draw!"}
+                    </p>
+                    <Board squares={board} handleClick={handleClick} winningIndexes={winnerIndexes} />
+                    <Button className='game_button' width="150px" onClick={startNewGame}>Start a new game</Button>
+                    <Button className='game_button' width="150px" onClick={handleGoToMain}> Go to main page </Button>
+                    <Button className='game_button' width="150px" onClick={handleRematch}> Rematch </Button>
+                </div>
+                <Chat gameId={gameId} />
             </div>
-            <Chat gameId={gameId} />
             {showPopup && (
                 <PopUp
                     imgSrc="/loading.svg"

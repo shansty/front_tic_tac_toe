@@ -3,27 +3,33 @@ import { io } from 'socket.io-client';
 import { getToken, getIDFromToken } from '../../../utils.ts';
 import "./Players.css"
 
-const playersSocket = io("http://localhost:3002/players", {
-    reconnectionDelayMax: 10000,
-    reconnection: true,
-});
 
 type Player = {
     user_name: string;
     winner_games: number;
 };
 
-const Players:React.FC= () => {
+const Players: React.FC = () => {
 
+    const token = getToken();
     const [players, setPlayers] = useState<Player[]>([]);
     const [showedPlayers, setShowedPlayers] = useState<Player[]>([]);
     const [filter, setFilter] = useState("");
     const playersEndRef = useRef<HTMLDivElement>(null);
-    const token = getToken();
     const user_id = getIDFromToken(token);
 
+    const playersSocket = io(`${process.env.REACT_APP_SOCKET_HOST}/players`,
+        {
+            reconnectionDelayMax: Number(process.env.REACT_APP_MAX_DELAY),
+            reconnection: true,
+            auth: {
+                token
+            }
+        }
+    );
+
     useEffect(() => {
-        playersSocket.emit("players_start", "start")
+        playersSocket.emit("players_start", user_id)
         console.dir({ players })
     }, [])
 
@@ -51,7 +57,7 @@ const Players:React.FC= () => {
         playersEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const handleClick = (rival_username:string) =>{
+    const handleClick = (rival_username: string) => {
         playersSocket.emit("throw_down_a_challenge", user_id, rival_username)
     }
 

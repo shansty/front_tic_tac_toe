@@ -10,15 +10,10 @@ type TypeChatProps = {
     gameId?: string;
 }  
 
-const gameChatSocket = io("http://localhost:3002/game_chat", {
-    reconnectionDelayMax: 10000,
-    reconnection: true,
-    withCredentials: true,
-});  
-
 const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
-
+    console.log("Component chat start")
     const [messages, setMessages] = useState<TypeGameChatMessage[]>([]);
+    console.dir({messages})
     const [inputMessage, setInputMessage] = useState("");
     const [sender, setSender] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -26,30 +21,42 @@ const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
     const token = getToken();
     const userId = getIDFromToken(token);
 
+
+
+    const gameChatSocket = io(`${process.env.REACT_APP_SOCKET_HOST}/game_chat`, {
+        reconnectionDelayMax: Number(process.env.REACT_APP_MAX_DELAY),
+        reconnection: true,
+        auth:{
+            token
+        }
+    });  
+
     useEffect(() => {
         getUserRoleForChat(gameId as string, userId as number, token, setSender)
         getGameChatMessages(gameId as string, token, setMessages)
-        gameChatSocket.emit("start_chat", userId)
+        gameChatSocket.on("connect", () => {
+            console.log("Reconnected to the server");
+            gameChatSocket.emit("start_chat", userId);
+        });
         gameChatSocket.on("error-event", (error:TypeSocketError) => {
             console.error(`Error ${error.message} ${error.code}`);
             alert(error.message);
         })
-    }, [])    
+    }, [])   
     
-
+    
     useEffect(() => {
-        gameChatSocket.on("receive_message", (message: TypeGameChatMessage) => {
-            console.log("receive_message.start")
-            console.dir({messages, message})
-
-            setMessages([...messages, message]);
-            console.dir({messages, message})
-        });
-        scrollToBottom();
-        return () => {
-            gameChatSocket.off("receive_message");
+        const handleMessage = (message: TypeGameChatMessage) => {
+            console.log("receive_message.start");
+            setMessages((prevMessages) => [...prevMessages, message]);
         };
-    }, [messages]);
+    
+        gameChatSocket.on("receive_message", handleMessage);
+    
+        return () => {
+            gameChatSocket.off("receive_message", handleMessage);
+        };
+    }, []);
 
 
     const scrollToBottom = () => {
@@ -59,6 +66,7 @@ const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
 
     const handleSendMessage = () => {
         gameChatSocket.emit("send_message", userId, gameId, inputMessage)
+        console.log("Emit send message")
         setInputMessage('');
         scrollToBottom();
     };
