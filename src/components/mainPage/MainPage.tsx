@@ -59,12 +59,14 @@ const MainPage: React.FC = () => {
                 <MainChat />
             </div>
             {showPopup && (
-                <PopUp
-                    imgSrc="/loading.svg"
-                    text="Looking for another player..."
-                    buttonText='Close'
-                    onClick={handleStopLooking}
-                />
+                <div>
+                    <PopUp
+                        imgSrc="/loading.svg"
+                        text="Looking for another player..."
+                        buttonText='Close'
+                        onClick={handleStopLooking}
+                    />
+                </div>
             )}
         </>
     );

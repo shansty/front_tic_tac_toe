@@ -47,8 +47,8 @@ const Game: React.FC = () => {
 
 
     useEffect(() => {
-        const winner = calculateWinner(board, setWinnerIndexes)?.winner
-        const winnerIndexes = calculateWinner(board, setWinnerIndexes)?.winnerIndexes
+        const winner = calculateWinner(board)?.winner
+        const winnerIndexes = calculateWinner(board)?.winnerIndexes
         setWinnerIndexes(winnerIndexes as number[])
         setWinner(winner)
         if (winner) {
@@ -244,7 +244,7 @@ const Game: React.FC = () => {
                         onClick: startNewGame,
                     }}
                     optionalButton={{
-                        text: "Go to the main page",
+                        text: "Go to main page",
                         onClick: handleGoToMain,
                     }}
                     closeButtononClose={{

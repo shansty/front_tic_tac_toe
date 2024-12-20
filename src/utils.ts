@@ -1,6 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 
-interface CustomJwtPayload {
+interface ICustomJwtPayload {
     id: number;
     exp: number;
     iat: number;
@@ -10,7 +10,7 @@ export function getIDFromToken(token: string | undefined): number | null {
     if (!token) {
         return null
     } else {
-        const decoded: CustomJwtPayload = jwtDecode(token);
+        const decoded: ICustomJwtPayload = jwtDecode(token);
         return decoded.id;
     }
 }
@@ -31,10 +31,9 @@ export function getToken(): string {
 }
 
 
-type SquaresArray = string[];
 
 
-export function calculateWinner(squares: SquaresArray, setWinnerIndexes: (value: React.SetStateAction<any[]>) => void) {
+export function calculateWinner(squares: string[]) {
     const lines = [
         [0, 1, 2],
         [3, 4, 5],
@@ -48,10 +47,6 @@ export function calculateWinner(squares: SquaresArray, setWinnerIndexes: (value:
     for (let i = 0; i < lines.length; i++) {
         const [a, b, c] = lines[i];
         if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-            // setWinnerIndexes(lines[i])
-            console.log('inside calculateWinner');
-            const log = lines[i]
-            console.dir({ log });
             return {
                 winner: squares[a],
                 winnerIndexes: lines[i]

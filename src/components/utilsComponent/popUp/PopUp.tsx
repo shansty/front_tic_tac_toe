@@ -34,17 +34,17 @@ const PopUp: React.FC<PopUpProps> = ({
   return (
     <div className='popUp'>
       {closeButtononClose && (
-        <button className='close_btn' onClick={closeButtononClose?.onClick}>X</button>
+        <button className='close_btn'onClick={closeButtononClose?.onClick}>X</button>
         )}
       <img src={imgSrc} alt="PopUp image" />
       <p>{text}</p>
       <div className="buttonContainer">
-        <Button className="button" onClick={onClick}>{buttonText}</Button>
+        <Button className="button" width="120px" onClick={onClick}>{buttonText}</Button>
         {secondButton && (
-          <Button onClick={secondButton.onClick} className="secondButton">{secondButton.text}</Button>
+          <Button width="120px" onClick={secondButton.onClick} className="secondButton">{secondButton.text}</Button>
         )}
         {optionalButton && (
-          <Button onClick={optionalButton.onClick} className="optionalButton">{optionalButton.text}</Button>
+          <Button width="120px" onClick={optionalButton.onClick} className="optionalButton">{optionalButton.text}</Button>
         )}
       </div>
     </div>

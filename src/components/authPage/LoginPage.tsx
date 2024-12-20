@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { signIn, signUp } from '../../axios.ts';
 import Button from '../utilsComponent/button/Button.tsx';
+import { getToken } from '../../utils.ts';
 import './LoginPage.css'
 
 
@@ -14,6 +15,13 @@ const LoginPage: React.FC = () => {
     const [isRegister, setIsRegister] = useState(true);
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = getToken();
+        if(token) {
+            navigate("/main")
+        }
+    }, [])
 
     const login = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         signIn(e, username, password, setUsername, setPassword, navigate)
