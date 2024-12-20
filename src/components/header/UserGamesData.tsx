@@ -5,7 +5,7 @@ import { getToken, checkTokenExparation, getIDFromToken } from '../../utils.ts';
 import "./UserGamesData.css";
 
 
-const GamesData = () => {
+const GamesData:React.FC = () => {
 
     const [gamesData, setGamesData] = useState<TypeUserGameData[]>([]);
 

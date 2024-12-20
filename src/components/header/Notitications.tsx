@@ -4,7 +4,7 @@ import { getNotifications, declineNotifications, acceptNotifications } from '../
 import { getToken, checkTokenExparation, getIDFromToken } from '../../utils.ts';
 import "./Notifications.css";
 
-const Notitications = () => {
+const Notitications:React.FC  = () => {
 
     const [notifications, setNotifications] = useState<TypeNotification[]>([]);
 

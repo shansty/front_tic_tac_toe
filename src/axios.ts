@@ -24,7 +24,11 @@ export const signIn = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
         setPassword('');
         navigate('/main')
     } catch (err) {
-        window.alert(`Error: ${err}`);
+        if (err.response.data) {
+            window.alert(` ${err.response.data.message}`);
+        } else {
+            window.alert(`Error: ${err}`);
+        }
     }
 }
 
@@ -49,7 +53,11 @@ export const signUp = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
         setPassword('');
         setUsername('');
     } catch (err) {
-        window.alert(`Error: ${err}`);
+        if (err.response.data) {
+            window.alert(` ${err.response.data.message}`);
+        } else {
+            window.alert(`Error: ${err}`);
+        }
     }
 }
 
@@ -72,7 +80,11 @@ export const getGameResult = async (gameId: string, token: string, board: string
         }
         setBoard([...board])
     } catch (err) {
-        window.alert(`Error: ${err}`);
+        if (err.response.data) {
+            window.alert(` ${err.response.data.message}`);
+        } else {
+            window.alert(`Error: ${err}`);
+        }
     }
 }
 
@@ -86,7 +98,11 @@ export const getUserRoleForChat = async (gameId: string, id: number, token: stri
         const userRole = response.data.user_role;
         setUserRole(userRole)
     } catch (err) {
-        window.alert(`Error: ${err}`);
+        if (err.response.data) {
+            window.alert(` ${err.response.data.message}`);
+        } else {
+            window.alert(`Error: ${err}`);
+        }
     }
 }
 
@@ -101,7 +117,11 @@ export const getGameChatMessages = async (gameId: string, token: string, setMess
         const game_history: TypeGameChatMessage[] = response?.data?.game_history;
         setMessages(game_history)
     } catch (err) {
-        window.alert(`Error: ${err}`);
+        if (err.response.data) {
+            window.alert(` ${err.response.data.message}`);
+        } else {
+            window.alert(`Error: ${err}`);
+        }
     }
 }
 
@@ -115,7 +135,11 @@ export const getNotifications = async (userId: number, token: string, setNotific
         const notifications: TypeNotification[] = response?.data?.notifications;
         setNotifications(notifications)
     } catch (err) {
-        window.alert(`Error: ${err}`);
+        if (err.response.data) {
+            window.alert(` ${err.response.data.message}`);
+        } else {
+            window.alert(`Error: ${err}`);
+        }
     }
 }
 
@@ -127,7 +151,11 @@ export const declineNotifications = async (userId: number, rival_username: strin
                 headers: getHeaders(token)
             });
     } catch (err) {
-        window.alert(`Error: ${err}`);
+        if (err.response.data) {
+            window.alert(` ${err.response.data.message}`);
+        } else {
+            window.alert(`Error: ${err}`);
+        }
     }
 }
 
@@ -139,7 +167,11 @@ export const acceptNotifications = async (userId: number, rival_username: string
                 headers: getHeaders(token)
             });
     } catch (err) {
-        window.alert(`Error: ${err}`);
+        if (err.response.data) {
+            window.alert(` ${err.response.data.message}`);
+        } else {
+            window.alert(`Error: ${err}`);
+        }
     }
 }
 
@@ -153,7 +185,11 @@ export const getUserGamesData = async (userId: number, token: string, setGamesDa
         const games = response.data.games
         setGamesData(games)
     } catch (err) {
-        window.alert(`Error: ${err}`);
+        if (err.response.data) {
+            window.alert(` ${err.response.data.message}`);
+        } else {
+            window.alert(`Error: ${err}`);
+        }
     }
 }
 
@@ -165,6 +201,10 @@ export const makeGameFightStatusComplitedAndUpdateGoogleSheet = async (winner: s
                 headers: getHeaders(token)
             });
     } catch (err) {
-        window.alert(`Error: ${err}`);
+        if (err.response.data) {
+            window.alert(` ${err.response.data.message}`);
+        } else {
+            window.alert(`Error: ${err}`);
+        }
     }
 }

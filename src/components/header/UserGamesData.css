@@ -1,4 +1,4 @@
-.game_link {
+.data {
     word-wrap: break-word; 
     word-break: break-word; 
     white-space: normal; 
@@ -6,6 +6,6 @@
     max-width: 100%; 
 }
 
-.game_data p {
+.data p {
     width: 25vh;
 }
