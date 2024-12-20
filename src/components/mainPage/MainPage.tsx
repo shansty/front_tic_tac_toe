@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import Button from '../utilsComponent/button/Button.tsx';
-import { getToken, getIDFromToken } from '../../utils.ts'
+import { getToken, checkTokenExparation, getIDFromToken } from '../../utils.ts'
 import { setupGameInfo } from '../../utils.ts';
 import { io } from 'socket.io-client';
 import PopUp from '../utilsComponent/popUp/PopUp.tsx';
@@ -12,7 +12,7 @@ import './MainPage.css';
 
 
 const MainPage: React.FC = () => {
-    const token = getToken();
+    const token = getToken() as string;
     const user_id = getIDFromToken(token);
     const navigate = useNavigate();
     const [showPopup, setShowPopup] = useState(false);
@@ -29,6 +29,9 @@ const MainPage: React.FC = () => {
         console.error('Socket connection error:', error);
     });
 
+    useEffect(() => {
+        checkTokenExparation(token)
+    }, [token])
 
     const handleClick = async () => {
         setShowPopup(true);

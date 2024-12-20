@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { TypeMainChatMessage, TypeSocketError } from '../../../types';
-import { getToken, getIDFromToken } from '../../../utils.ts';
+import { getToken, checkTokenExparation, getIDFromToken } from '../../../utils.ts';
 import { io } from 'socket.io-client';
 import Button from '../../utilsComponent/button/Button.tsx';
 import "./MainChat.css"
@@ -11,7 +11,7 @@ const MainChat:React.FC = () => {
     const [messages, setMessages] = useState<TypeMainChatMessage[]>([]);
     const [inputMessage, setInputMessage] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const token = getToken();
+    const token = getToken() as string;
     const userId = getIDFromToken(token);
     
     const mainChatSocket = io(`${process.env.REACT_APP_SOCKET_HOST}/main_chat`, {
@@ -29,6 +29,10 @@ const MainChat:React.FC = () => {
             alert(error.message);
         })
     }, [])  
+
+    useEffect(() => {
+            checkTokenExparation(token)
+        }, [token])
 
     useEffect(() => {
         mainChatSocket.on("receive_message", (message: TypeMainChatMessage) => {

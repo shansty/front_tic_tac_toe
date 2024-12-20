@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { TypeNotification } from '../../types.ts';
 import { getNotifications, declineNotifications, acceptNotifications } from '../../axios.ts';
-import { getToken, getIDFromToken } from '../../utils.ts';
+import { getToken, checkTokenExparation, getIDFromToken } from '../../utils.ts';
 import "./Notifications.css";
 
 const Notitications = () => {
 
     const [notifications, setNotifications] = useState<TypeNotification[]>([]);
 
-    const token = getToken();
+    const token = getToken() as string;
     const user_id = getIDFromToken(token);
+
+    useEffect(() => {
+            checkTokenExparation(token)
+        }, [token])
 
     useEffect(() => {
         getNotifications(user_id as number, token, setNotifications)

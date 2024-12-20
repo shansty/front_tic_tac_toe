@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { signIn, signUp } from '../../axios.ts';
 import Button from '../utilsComponent/button/Button.tsx';
-import { getToken } from '../../utils.ts';
+import { getToken, checkTokenExparation } from '../../utils.ts';
 import './LoginPage.css'
 
 
@@ -16,12 +16,14 @@ const LoginPage: React.FC = () => {
 
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const token = getToken();
+    const token = getToken();
+    
+
+    useEffect(() => {   
         if(token) {
-            navigate("/main")
+            navigate('/main')
         }
-    }, [])
+    },[token])
 
     const login = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         signIn(e, username, password, setUsername, setPassword, navigate)

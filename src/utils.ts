@@ -16,8 +16,15 @@ export function getIDFromToken(token: string | undefined): number | null {
 }
 
 
-export function getToken(): string {
+export function getToken(): string | null {
     const token = localStorage.getItem("token") as string
+    if (!token || token === null || token === "") {
+        return null;
+    }
+    return token;
+}
+
+export function checkTokenExparation(token: string | null): void {
     if (!token || token === null) {
         window.location.assign("http://localhost:3000/")
     } else {
@@ -27,7 +34,6 @@ export function getToken(): string {
             window.location.assign("http://localhost:3000/")
         }
     }
-    return token;
 }
 
 

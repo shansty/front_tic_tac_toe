@@ -4,9 +4,14 @@ import MainPage from './components/mainPage/MainPage.tsx';
 import Game from './components/gamePage/game/Game.tsx';
 import GoogleAuth from './components/authPage/GoogleAuth.tsx';
 import { Route, BrowserRouter, Routes} from 'react-router-dom';
+import { getToken } from './utils.ts';
+import { Navigate } from 'react-router-dom';
 
 
 const App: React.FC = () => {
+
+  // const token = getToken();
+
   return (
     <div className='app'>
       <BrowserRouter>

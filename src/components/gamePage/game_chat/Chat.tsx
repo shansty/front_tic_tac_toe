@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import Button from '../../utilsComponent/button/Button.tsx';
-import { getToken, getIDFromToken } from '../../../utils.ts';
+import { getToken,checkTokenExparation, getIDFromToken } from '../../../utils.ts';
 import { getUserRoleForChat, getGameChatMessages } from '../../../axios.ts';
 import { TypeSocketError, TypeGameChatMessage } from '../../../types.ts';
 import './Chat.css'; 
@@ -18,7 +18,7 @@ const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
     const [sender, setSender] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const token = getToken();
+    const token = getToken() as string;
     const userId = getIDFromToken(token);
 
 
@@ -30,6 +30,10 @@ const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
             token
         }
     });  
+
+    useEffect(() => {
+            checkTokenExparation(token)
+        }, [token])
 
     useEffect(() => {
         getUserRoleForChat(gameId as string, userId as number, token, setSender)

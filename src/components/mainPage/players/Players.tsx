@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import { getToken, getIDFromToken } from '../../../utils.ts';
+import { getToken, checkTokenExparation, getIDFromToken } from '../../../utils.ts';
 import "./Players.css"
 
 
@@ -11,7 +11,7 @@ type Player = {
 
 const Players: React.FC = () => {
 
-    const token = getToken();
+    const token = getToken() as string;
     const [players, setPlayers] = useState<Player[]>([]);
     const [showedPlayers, setShowedPlayers] = useState<Player[]>([]);
     const [filter, setFilter] = useState("");
@@ -27,6 +27,10 @@ const Players: React.FC = () => {
             }
         }
     );
+
+    useEffect(() => {
+            checkTokenExparation(token)
+        }, [token])
 
     useEffect(() => {
         playersSocket.emit("players_start", user_id)

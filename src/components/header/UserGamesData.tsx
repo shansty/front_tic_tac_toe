@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TypeUserGameData } from '../../types.ts';
 import { getUserGamesData } from '../../axios.ts';
-import { getToken, getIDFromToken } from '../../utils.ts';
+import { getToken, checkTokenExparation, getIDFromToken } from '../../utils.ts';
 import "./UserGamesData.css";
 
 
@@ -9,12 +9,16 @@ const GamesData = () => {
 
     const [gamesData, setGamesData] = useState<TypeUserGameData[]>([]);
 
-    const token = getToken();
+    const token = getToken() as string;
     const user_id = getIDFromToken(token);
 
     useEffect(() => {
         getUserGamesData(user_id as number, token, setGamesData)
     }, [])
+
+    useEffect(() => {
+            checkTokenExparation(token)
+        }, [token])
 
     return (
         <div className='data_container'>

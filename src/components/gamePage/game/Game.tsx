@@ -7,7 +7,7 @@ import PopUp from '../../utilsComponent/popUp/PopUp.tsx';
 import Chat from '../game_chat/Chat.tsx';
 import Header from '../../header/Header.tsx';
 import Notification from '../../utilsComponent/notification/Notification.tsx';
-import { getToken, getIDFromToken, calculateWinner, setupGameInfo } from '../../../utils.ts';
+import { getToken, checkTokenExparation, getIDFromToken, calculateWinner, setupGameInfo } from '../../../utils.ts';
 import { getGameResult, makeGameFightStatusComplitedAndUpdateGoogleSheet } from '../../../axios.ts';
 import { TypeGame, TypeSocketError, EnumRole } from '../../../types.ts'
 import './Game.css'
@@ -15,7 +15,7 @@ import './Game.css'
 
 const Game: React.FC = () => {
     const { id: gameId } = useParams();
-    const token = getToken();
+    const token = getToken() as string;
     const user_id = getIDFromToken(token) as number;
     const navigate = useNavigate();
 
@@ -45,6 +45,9 @@ const Game: React.FC = () => {
         }
     });
 
+    useEffect(() => {
+            checkTokenExparation(token)
+        }, [token])
 
     useEffect(() => {
         const winner = calculateWinner(board)?.winner
@@ -58,7 +61,7 @@ const Game: React.FC = () => {
 
 
     useEffect(() => {
-        getGameResult(gameId as string, token, board, setBoard)
+        getGameResult(gameId as string, token as string, board, setBoard)
         gamesSocket.on("error-event", (error: TypeSocketError) => {
             console.error(`Error ${error.message} ${error.code}`);
             alert(error.message);
