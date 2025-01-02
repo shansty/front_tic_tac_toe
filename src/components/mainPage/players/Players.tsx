@@ -9,6 +9,7 @@ type Player = {
     winner_games: number;
 };
 
+
 const Players: React.FC = () => {
 
     const token = getToken() as string;
@@ -55,7 +56,6 @@ const Players: React.FC = () => {
             setShowedPlayers(filter_players);
         }
     }, [filter])
-
 
     const scrollToBottom = () => {
         playersEndRef.current?.scrollIntoView({ behavior: 'smooth' });

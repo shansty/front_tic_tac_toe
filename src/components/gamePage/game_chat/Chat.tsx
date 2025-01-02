@@ -6,22 +6,21 @@ import { getUserRoleForChat, getGameChatMessages } from '../../../axios.ts';
 import { TypeSocketError, TypeGameChatMessage } from '../../../types.ts';
 import './Chat.css'; 
 
+
 type TypeChatProps = {
     gameId?: string;
 }  
 
+
 const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
-    console.log("Component chat start")
+
     const [messages, setMessages] = useState<TypeGameChatMessage[]>([]);
-    console.dir({messages})
     const [inputMessage, setInputMessage] = useState("");
     const [sender, setSender] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const token = getToken() as string;
     const userId = getIDFromToken(token);
-
-
 
     const gameChatSocket = io(`${process.env.REACT_APP_SOCKET_HOST}/game_chat`, {
         reconnectionDelayMax: Number(process.env.REACT_APP_MAX_DELAY),
@@ -48,13 +47,11 @@ const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
         })
     }, [])   
     
-    
     useEffect(() => {
         const handleMessage = (message: TypeGameChatMessage) => {
             console.log("receive_message.start");
             setMessages((prevMessages) => [...prevMessages, message]);
-        };
-    
+        };   
         gameChatSocket.on("receive_message", handleMessage);
     
         return () => {
@@ -62,11 +59,9 @@ const Chat: React.FC<TypeChatProps> = ({ gameId }) => {
         };
     }, []);
 
-
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
-
 
     const handleSendMessage = () => {
         gameChatSocket.emit("send_message", userId, gameId, inputMessage)

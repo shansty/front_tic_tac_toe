@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { TypeNotification } from '../../types.ts';
-import { getNotifications, declineNotifications, acceptNotifications } from '../../axios.ts';
-import { getToken, checkTokenExparation, getIDFromToken } from '../../utils.ts';
+import { TypeNotification } from '../../../types.ts'
+import { getNotifications, declineNotifications, acceptNotifications } from '../../../axios.ts';
+import { getToken, checkTokenExparation, getIDFromToken } from '../../../utils.ts';
 import "./Notifications.css";
+
 
 const Notitications:React.FC  = () => {
 

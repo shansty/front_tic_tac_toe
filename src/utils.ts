@@ -1,10 +1,12 @@
 import { jwtDecode } from "jwt-decode";
 
+
 interface ICustomJwtPayload {
     id: number;
     exp: number;
     iat: number;
 }
+
 
 export function getIDFromToken(token: string | undefined): number | null {
     if (!token) {
@@ -15,7 +17,6 @@ export function getIDFromToken(token: string | undefined): number | null {
     }
 }
 
-
 export function getToken(): string | null {
     const token = localStorage.getItem("token") as string
     if (!token || token === null || token === "") {
@@ -25,19 +26,17 @@ export function getToken(): string | null {
 }
 
 export function checkTokenExparation(token: string | null): void {
-    if (!token || token === null) {
+    if (!token || token === null || "") {
         window.location.assign("http://localhost:3000/")
     } else {
         const decoded = jwtDecode(token);
         let exparation = decoded.exp as number;
         if (Date.now() > (exparation * 1000)) {
+            localStorage.removeItem("token")
             window.location.assign("http://localhost:3000/")
         }
     }
 }
-
-
-
 
 export function calculateWinner(squares: string[]) {
     const lines = [
@@ -59,8 +58,8 @@ export function calculateWinner(squares: string[]) {
             }
         }
     }
+    return;
 }
-
 
 export const setupGameInfo = async (navigate: Function, gameId: string) => {
     try {

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { signIn, signUp } from '../../axios.ts';
 import Button from '../utilsComponent/button/Button.tsx';
-import { getToken, checkTokenExparation } from '../../utils.ts';
+import { getToken } from '../../utils.ts';
 import './LoginPage.css'
 
 

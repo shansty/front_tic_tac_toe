@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { TypeUserGameData } from '../../types.ts';
-import { getUserGamesData } from '../../axios.ts';
-import { getToken, checkTokenExparation, getIDFromToken } from '../../utils.ts';
+import { TypeUserGameData } from '../../../types.ts';
+import { getUserGamesData } from '../../../axios.ts';
+import { getToken, checkTokenExparation, getIDFromToken } from '../../../utils.ts';
 import "./UserGamesData.css";
 
 

@@ -48,11 +48,9 @@ const MainChat:React.FC = () => {
         };
     }, [messages]);
 
-
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
-    
 
     const handleSendMessage = () => {
         mainChatSocket.emit("send_message", userId, inputMessage)

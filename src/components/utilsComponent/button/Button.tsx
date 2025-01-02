@@ -1,11 +1,11 @@
 import React from 'react';
-import { cursorTo } from 'readline';
+
 
 interface ButtonProps {
     children: React.ReactNode;
     className?: string;
     onClick: (e: React.MouseEvent<HTMLButtonElement>) => any; 
-    width?: string; // Optional width prop
+    width?: string; 
 }
 
 const Button = ({ children, className, onClick, width = '200px' }: ButtonProps) => { 

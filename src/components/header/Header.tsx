@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import Notitications from './Notitications.tsx';
-import UserGamesData from './UserGamesData.tsx';
+import Notitications from './notifications/Notitications.tsx';
+import UserGamesData from './userGamesData/UserGamesData.tsx'
 import "./Header.css"
+
 
 const Header:React.FC = () => {
 
     const [visibleList, setVisibleList] = useState("");
 
     const toggleList = (listName: string) => {
-
         if (visibleList === listName) {
             setVisibleList("");
         } else {
@@ -28,16 +28,6 @@ const Header:React.FC = () => {
                     Your challenges hisory
                 </p>
             </div>
-            {/* {visibleList === "notifications" && (
-                <div className='dpopdown_container'>
-                    <Notitications />
-                </div>
-            )}
-            {visibleList === "allGames" && (
-                <div className="dpopdown_container">
-                    <UserGamesData/>
-                </div>
-            )} */}
         </div>
         {visibleList === "notifications" && (
             <div className='dpopdown_container'>

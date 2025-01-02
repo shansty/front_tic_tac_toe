@@ -14,12 +14,13 @@ import './Game.css'
 
 
 const Game: React.FC = () => {
+
     const { id: gameId } = useParams();
     const token = getToken() as string;
     const user_id = getIDFromToken(token) as number;
     const navigate = useNavigate();
 
-    const [board, setBoard] = useState<string[]>(Array(9).fill(null));
+    const [board, setBoard] = useState<string[]>(Array(9).fill(""));
     const [isXNext, setIsXNext] = useState(true);
     const [draw, setDraw] = useState(false);
     const [winnerIndexes, setWinnerIndexes] = useState(Array(3).fill(null));
@@ -54,11 +55,15 @@ const Game: React.FC = () => {
         const winnerIndexes = calculateWinner(board)?.winnerIndexes
         setWinnerIndexes(winnerIndexes as number[])
         setWinner(winner)
+        console.log(winner)
         if (winner) {
             makeGameFightStatusComplitedAndUpdateGoogleSheet(winner, winnerIndexes as number[], user_id, gameId as string, token)
         }
+        if (!board.includes("") && (!winner)) {
+            setDraw(true)
+            makeGameFightStatusComplitedAndUpdateGoogleSheet("", [], user_id, gameId as string, token)
+        }
     }, [board])
-
 
     useEffect(() => {
         getGameResult(gameId as string, token as string, board, setBoard)
@@ -69,10 +74,7 @@ const Game: React.FC = () => {
         joinRoom();
     }, [])
 
-
     useEffect(() => {
-        console.dir({ user_id, gameId })
-
         awaitingRoomSocket.on('gameid', (gameId) => {
             setShowPopup(false);
             setupGameInfo(navigate, gameId)
@@ -88,7 +90,7 @@ const Game: React.FC = () => {
         })
 
         gamesSocket.on(`update-${gameId}`, (game: TypeGame) => {
-            const board = Array(9).fill(null)
+            const board: string[] = Array(9).fill("")
             const gameUserX = game.game_user.find(gu => gu.role === EnumRole.PLAYER_X)
             if (gameUserX) {
                 const gameUserXId = gameUserX.id
@@ -99,10 +101,6 @@ const Game: React.FC = () => {
                 })
             }
             setBoard(board)
-            if (!board.includes(null) && (winner !== "X" || winner !== "O")) {
-                setDraw(true)
-                makeGameFightStatusComplitedAndUpdateGoogleSheet("", [], user_id, gameId as string, token)
-            }
             console.log(` Board ${board}`)
         });
 
@@ -131,19 +129,17 @@ const Game: React.FC = () => {
             console.log(message)
         })
     }, [notification])
-
+    
 
     const handleClick = (index: number) => {
         gamesSocket.emit("move", gameId, user_id, index)
     }
-
 
     const startNewGame = async () => {
         setShowPopup(true)
         clearBoard();
         awaitingRoomSocket.emit("await", user_id)
     };
-
 
     const handleStopLooking = () => {
         if (awaitingRoomSocket) {
@@ -152,7 +148,6 @@ const Game: React.FC = () => {
             setShowPopup(false);
         }
     };
-
 
     const handleGoToMain = () => {
         setShowPopup(false);
@@ -165,12 +160,10 @@ const Game: React.FC = () => {
         setDraw(false)
     };
 
-
     const handleRematch = () => {
         awaitingRoomSocket.emit("awaiting_for_rematch", user_id, gameId)
         setShowPopup(true);
     }
-
 
     const handleRematchAgree = () => {
         clearBoard()
@@ -178,25 +171,22 @@ const Game: React.FC = () => {
         setNotification(false)
     }
 
-
     const handleRematchDecline = () => {
         awaitingRoomSocket.emit("decline_rematch", rivalUser, user_id)
         setNotification(false)
         setShowPopup(false)
     }
 
-
     const joinRoom = () => {
         awaitingRoomSocket.emit("join_room", user_id)
         console.log(`Join room function`)
     }
 
-
     const clearBoard = () => {
         setWinnerIndexes(Array(3).fill(null))
         setWinner(undefined)
         setDraw(false)
-        setBoard(Array(9).fill(null))
+        setBoard(Array(9).fill(""))
     }
 
 
@@ -219,7 +209,7 @@ const Game: React.FC = () => {
                         {playerRole}
                     </p>
                     <p className='game_text'>
-                        {winner ? 'The winner is ' + winner : !winner && !draw ? 'Now it is ' + (isXNext ? 'X' : 'O') + ' turn' : "This is the draw!"}
+                        {winner ? 'The winner is ' + winner :  draw ? "This is the draw!" : 'Now it is ' + (isXNext ? 'X' : 'O') + ' turn'}
                     </p>
                     <Board squares={board} handleClick={handleClick} winningIndexes={winnerIndexes} />
                     <Button className='game_button' width="150px" onClick={startNewGame}>Start a new game</Button>

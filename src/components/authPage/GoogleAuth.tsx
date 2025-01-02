@@ -2,7 +2,8 @@ import React from 'react';
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-const GoogleAuth = () => {
+
+const GoogleAuth: React.FC  = () => {
 
     const {token: token} = useParams();
     const navigate = useNavigate();

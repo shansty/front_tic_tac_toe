@@ -23,7 +23,7 @@ export const signIn = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
         setUsername('');
         setPassword('');
         navigate('/main')
-    } catch (err) {
+    } catch (err: any) {
         if (err.response.data) {
             window.alert(` ${err.response.data.message}`);
         } else {
@@ -52,7 +52,7 @@ export const signUp = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
         setEmail('');
         setPassword('');
         setUsername('');
-    } catch (err) {
+    } catch (err: any) {
         if (err.response.data) {
             window.alert(` ${err.response.data.message}`);
         } else {
@@ -79,7 +79,7 @@ export const getGameResult = async (gameId: string, token: string, board: string
             }
         }
         setBoard([...board])
-    } catch (err) {
+    } catch (err: any) {
         if (err.response.data) {
             window.alert(` ${err.response.data.message}`);
         } else {
@@ -97,7 +97,7 @@ export const getUserRoleForChat = async (gameId: string, id: number, token: stri
             });
         const userRole = response.data.user_role;
         setUserRole(userRole)
-    } catch (err) {
+    } catch (err: any) {
         if (err.response.data) {
             window.alert(` ${err.response.data.message}`);
         } else {
@@ -116,7 +116,7 @@ export const getGameChatMessages = async (gameId: string, token: string, setMess
             });
         const game_history: TypeGameChatMessage[] = response?.data?.game_history;
         setMessages(game_history)
-    } catch (err) {
+    } catch (err: any) {
         if (err.response.data) {
             window.alert(` ${err.response.data.message}`);
         } else {
@@ -134,7 +134,7 @@ export const getNotifications = async (userId: number, token: string, setNotific
             });
         const notifications: TypeNotification[] = response?.data?.notifications;
         setNotifications(notifications)
-    } catch (err) {
+    } catch (err: any) {
         if (err.response.data) {
             window.alert(` ${err.response.data.message}`);
         } else {
@@ -146,11 +146,11 @@ export const getNotifications = async (userId: number, token: string, setNotific
 
 export const declineNotifications = async (userId: number, rival_username: string, token: string) => {
     try {
-        const response = await axios.put(`${NOTIFICATIONS_URL}/${userId}`, { rival_username },
+        await axios.put(`${NOTIFICATIONS_URL}/${userId}`, { rival_username },
             {
                 headers: getHeaders(token)
             });
-    } catch (err) {
+    } catch (err: any) {
         if (err.response.data) {
             window.alert(` ${err.response.data.message}`);
         } else {
@@ -162,11 +162,11 @@ export const declineNotifications = async (userId: number, rival_username: strin
 
 export const acceptNotifications = async (userId: number, rival_username: string, token: string) => {
     try {
-        const response = await axios.put(`${ACCEPT_NOTIFICATIONS_URL}/${userId}`, { rival_username },
+        await axios.put(`${ACCEPT_NOTIFICATIONS_URL}/${userId}`, { rival_username },
             {
                 headers: getHeaders(token)
             });
-    } catch (err) {
+    } catch (err: any) {
         if (err.response.data) {
             window.alert(` ${err.response.data.message}`);
         } else {
@@ -184,7 +184,7 @@ export const getUserGamesData = async (userId: number, token: string, setGamesDa
             });
         const games = response.data.games
         setGamesData(games)
-    } catch (err) {
+    } catch (err: any) {
         if (err.response.data) {
             window.alert(` ${err.response.data.message}`);
         } else {
@@ -200,7 +200,7 @@ export const makeGameFightStatusComplitedAndUpdateGoogleSheet = async (winner: s
             {
                 headers: getHeaders(token)
             });
-    } catch (err) {
+    } catch (err: any) {
         if (err.response.data) {
             window.alert(` ${err.response.data.message}`);
         } else {

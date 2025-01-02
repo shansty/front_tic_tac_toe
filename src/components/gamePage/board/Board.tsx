@@ -9,6 +9,7 @@ type TypeBoardProps = {
     winningIndexes?: number[]; 
 };
 
+
 const Board: React.FC<TypeBoardProps> = ({squares, handleClick, winningIndexes}) => {
 
     const isWinningSquare = (index: number) => {

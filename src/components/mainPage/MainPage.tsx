@@ -12,7 +12,8 @@ import './MainPage.css';
 
 
 const MainPage: React.FC = () => {
-    const token = getToken() as string;
+
+    let token = getToken() as string;
     const user_id = getIDFromToken(token);
     const navigate = useNavigate();
     const [showPopup, setShowPopup] = useState(false);
@@ -31,6 +32,7 @@ const MainPage: React.FC = () => {
 
     useEffect(() => {
         checkTokenExparation(token)
+        token = getToken() as string;
     }, [token])
 
     const handleClick = async () => {
@@ -44,7 +46,6 @@ const MainPage: React.FC = () => {
             setupGameInfo(navigate, gameId);
         });
     };
-
 
     const handleStopLooking = () => {
         awaitingRoomSocket.emit("stop_awaiting", user_id);
